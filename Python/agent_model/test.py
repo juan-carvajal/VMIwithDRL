@@ -1,5 +1,5 @@
-from PDG.DesarolloPropio.model import Model
-from PDG.DesarolloPropio.training_agent import TrainingAgent
+from agent_model.model import Model
+from agent_model.training_agent import TrainingAgent
 import numpy as np
 
 
