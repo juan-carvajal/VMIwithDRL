@@ -11,4 +11,4 @@ class VMI(Model):
 
 
 
-    def model_logic(self, state, action):
+    #def model_logic(self, state, action):
