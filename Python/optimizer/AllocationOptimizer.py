@@ -99,7 +99,7 @@ class AllocationOptimizer():
         #
         # # The optimised objective function value is printed to the screen
         # print ("costo total = ", value(prob.objective))
-
+        #print(type(x[0][0]))
         return x
 
 # Create the 'prob' variable to contain the problem data
