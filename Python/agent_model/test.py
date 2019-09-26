@@ -1,5 +1,5 @@
-from agent_model.model import Model
-from agent_model.training_agent import TrainingAgent
+from model import Model
+from training_agent import TrainingAgent
 import numpy as np
 
 
