@@ -33,7 +33,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.AllocationOptimizer1">
+  <component name="RunManager" selected="Python.AllocationOptimizer">
     <configuration name="AllocationOptimizer" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="VMIwithDRL" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -115,9 +115,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.AllocationOptimizer" />
         <item itemvalue="Python.AllocationOptimizer1" />
         <item itemvalue="Python.test" />
-        <item itemvalue="Python.AllocationOptimizer" />
       </list>
     </recent_temporary>
   </component>
@@ -132,7 +132,7 @@
       <option name="presentableId" value="Default" />
       <updated>1569448318714</updated>
       <workItem from="1569448340248" duration="643000" />
-      <workItem from="1569507155738" duration="1087000" />
+      <workItem from="1569507155738" duration="2438000" />
     </task>
     <servers />
   </component>
