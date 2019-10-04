@@ -16,8 +16,9 @@ class VMI(Model):
         self.stockout_cost = stockout_cost
         self.hospitals = [Hospital([0] * 5, None, exp_cost, stockout_cost)] * hospitals
 
-    def model_logic(self, state, action):
+   def model_logic(self, state, action):
         demands = [5, 10, 15, 20]
+        donors = 8;
         A = action
         A_i = [0] * self.shelf_life
         for i, val in enumerate(A_i):
@@ -33,3 +34,33 @@ class VMI(Model):
         opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life,
                                   len(self.hospitals))
         rep = opt.allocate()
+        
+        next_state = self.update_inventory_bloodbank(state, donors, action);
+                                  
+        reward = rep + self.exp_cost*state[0];
+        
+        
+        return state, action, next_state, reward, False
+                                      
+    def update_inventory_bloodbank(self, state, donors, action):
+        state_aux = []
+        for i in (self.shelf_life):
+            if (i==0):
+                state_aux[i] = max(0, state[i+1] - action)
+            elif 0 < i < 4:    
+                state_aux[i] = max(0, state[i+1] - max(0, action - sum(state[:i])))
+            else:
+                state_aux[i] = max(0, donors - max(0, action - sum(state[:i])))
+                
+        state = state_aux;
+       
+        return state
+                
+                
+initial_state = [0, 0, 0, 0, 0]
+model = VMI(4, 100, 5, initial_state)
+agent = TrainingAgent(model=model, runs=2000, steps_per_run=365, batch_size=32, epsilon_decay=0.01)
+agent.run()
+                
+        
+        
