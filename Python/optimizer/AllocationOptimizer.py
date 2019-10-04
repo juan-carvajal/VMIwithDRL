@@ -17,7 +17,7 @@ class AllocationOptimizer():
     def allocate(self):
         # self.R = list(range(5))
         # H = list(range(4))
-        RX = list(range(self.R.__len__()))
+        RX = list(range(len(self.R)))
 
         prob = LpProblem("LPOptimizationProblem", LpMinimize)
 
@@ -75,7 +75,9 @@ class AllocationOptimizer():
             prob += F[h] <= 0.25 * lpSum([F[h1] for (h1) in self.H])
 
         for r in self.R:
-            prob += self.A[r] == lpSum([x[h][r] for (h) in self.H])
+            print(r , self.A[r])
+            print(type(self.A[r] >= lpSum([x[h][r] for (h) in self.H])))
+            prob += self.A[r] >= lpSum([x[h][r] for (h) in self.H])
 
         prob += (lpSum([self.II[0][r] for (r) in self.R]) + lpSum([x[0][r] for (r) in self.R])) / self.D[0] == (
                 lpSum([self.II[1][r] for (r) in self.R]) + lpSum([x[1][r] for (r) in self.R])) / self.D[1]
@@ -91,15 +93,15 @@ class AllocationOptimizer():
         prob.solve()
 
         # The status of the solution is printed to the screen
-        print("Status:", LpStatus[prob.status])
+        #print("Status:", LpStatus[prob.status])
 
-        for r in self.R:
-            for h in self.H:
-                print ("x" + str(h) + str(r), x[h][r].varValue)
+        # for r in self.R:
+        #     for h in self.H:
+        #         print ("x" + str(h) + str(r), x[h][r].varValue)
 
         # The optimised objective function value is printed to the screen
-        print ("costo total = ", value(prob.objective))
-        print(type(x[0][0]))
+        #print ("costo total = ", value(prob.objective))
+        #print(type(x[0][0]))
 
         return x
 
