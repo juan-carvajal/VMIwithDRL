@@ -40,7 +40,7 @@ class TrainingAgent:
             run_step_count = 0
             while not terminate:
                 action = 0
-
+                print(run_step_count)
                 if np.random.rand() <= self.epsilon:
                     # Pick random action
 
