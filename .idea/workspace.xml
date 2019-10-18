@@ -41,7 +41,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.docplex_example">
+  <component name="RunManager" selected="Python.VMImodel">
     <configuration name="AllocationOptimizer" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="VMIwithDRL" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -78,6 +78,25 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Python/optimizer/AllocationOptimizer1.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="VMImodel" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="VMIwithDRL" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Python/implementation" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Python/implementation/VMImodel.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -154,6 +173,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.VMImodel" />
         <item itemvalue="Python.docplex_example" />
         <item itemvalue="Python.AllocationOptimizer" />
         <item itemvalue="Python.AllocationOptimizer1" />
@@ -176,6 +196,7 @@
       <workItem from="1570472564497" duration="38000" />
       <workItem from="1570629649238" duration="5418000" />
       <workItem from="1570763345488" duration="633000" />
+      <workItem from="1571266777155" duration="976000" />
     </task>
     <servers />
   </component>

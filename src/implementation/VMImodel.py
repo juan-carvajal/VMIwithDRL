@@ -1,4 +1,6 @@
 from agent_model.model import Model
+#from training_agent import TrainingAgent
+
 from agent_model.training_agent import TrainingAgent
 from implementation.hospital import Hospital
 import numpy as np
