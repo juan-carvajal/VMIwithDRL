@@ -1,10 +1,13 @@
-from model import Model
+from ..agent_model import Model
 from training_agent import TrainingAgent
 from hospital import Hospital
 import numpy as np
 import AllocationOptimizerCplexDocPlex
 # from AllocationOptimizerCplex import AllocationOptimizer
 from AllocationOptimizerCplexDocPlex import AllocationOptimizer
+
+
+
 
 
 class VMI(Model):
