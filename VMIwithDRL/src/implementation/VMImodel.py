@@ -1,10 +1,9 @@
-from ..agent_model import Model
-from training_agent import TrainingAgent
-from hospital import Hospital
+from agent_model.model import Model
+from agent_model.training_agent import TrainingAgent
+from implementation.hospital import Hospital
 import numpy as np
-import AllocationOptimizerCplexDocPlex
-# from AllocationOptimizerCplex import AllocationOptimizer
-from AllocationOptimizerCplexDocPlex import AllocationOptimizer
+
+from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 
 
 
