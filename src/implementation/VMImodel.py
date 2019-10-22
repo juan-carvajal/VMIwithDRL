@@ -1,10 +1,10 @@
-from agent_model.model import Model
-#from training_agent import TrainingAgent
-
-from agent_model.training_agent import TrainingAgent
-from implementation.hospital import Hospital
+from model import Model
+from training_agent import TrainingAgent
+from hospital import Hospital
 import numpy as np
-from optimizer.AllocationOptimizer import AllocationOptimizer
+import AllocationOptimizerCplexDocPlex
+# from AllocationOptimizerCplex import AllocationOptimizer
+from AllocationOptimizerCplexDocPlex import AllocationOptimizer
 
 
 class VMI(Model):
@@ -33,20 +33,47 @@ class VMI(Model):
         for i in self.hospitals:
             II.append(i.inventory)
 
-        opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life, len(self.hospitals))
+        # II = [[0, 2, 0, 3, 0], [0, 1, 0, 3, 3], [0, 1, 2, 2, 5], [0, 3, 5, 1, 1]]
+        # D = [5, 5, 5, 5]
+        # A = [6, 7, 8, 9, 10]
+        # M = 1000000
+        # CF = 100
+        # CV = 10
+        # R = 5
+        # H = 4
+        # a = AllocationOptimizer(II, A, D, CV, CF, R, H)
+        # x = a.allocate()
+        # print(x)
+        # print(x[0])
+
+        # print(II)
+        # print(A_i)
+        # print(demands)
+        # print(self.exp_cost)
+        # print(self.stockout_cost)
+        # print(self.shelf_life)
+        # print(len(self.hospitals))
+
+        opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life,
+                                  len(self.hospitals))
+
+        # opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life, len(self.hospitals))
         rep = opt.allocate()
 
+        #print(rep)
         next_state = self.update_inventory_bloodbank(state, donors, action)
-        #print(donors)
-        #print(next_state)
-        reward = state[0]*self.exp_cost
-        for i in range(len(self.hospitals)):
-            reward+=self.hospitals[i].supply(rep[i],demands[i])
+        # print(donors)
+        # print(next_state)
+
+        reward = state[0] * self.exp_cost
         #print(reward)
+        for hosp in range(len(self.hospitals)):
+            reward += self.hospitals[hosp].supply(rep[hosp], demands[hosp])
+        # print(reward)
         return state, action, next_state, -reward, False
 
     def update_inventory_bloodbank(self, state, donors, action):
-        state_aux = [0]*len(state)
+        state_aux = [0] * len(state)
         for i in range(self.shelf_life):
             if (i == 0):
                 state_aux[i] = max(0, state[i + 1] - action)
@@ -61,6 +88,6 @@ class VMI(Model):
 
 
 initial_state = [0, 0, 0, 0, 0]
-model = VMI(4, 100, 5, initial_state,5,100)
-agent = TrainingAgent(model=model, runs=10, steps_per_run=365, batch_size=32, epsilon_decay=0.01)
+model = VMI(4, 100, 5, initial_state, 5, 100)
+agent = TrainingAgent(model=model, runs=300, steps_per_run=365, batch_size=32, epsilon_decay=0.01)
 agent.run()
