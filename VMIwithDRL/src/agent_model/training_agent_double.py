@@ -24,18 +24,18 @@ class TrainingAgent:
         self.network_update_period=network_update_period
         self.actor = keras.Sequential(
             [
-                keras.layers.Dense(64, input_dim=model.state_dim, activation="relu"),
-                keras.layers.Dense(128, activation="relu"),
-                keras.layers.Dense(128, activation="relu"),
+                keras.layers.Dense(128, input_dim=model.state_dim, activation="relu"),
+                keras.layers.Dense(256, activation="relu"),
+                keras.layers.Dense(256, activation="relu"),
                 keras.layers.Dense(128, activation="relu"),
                 keras.layers.Dense(model.action_dim, activation="linear")
             ]
         )
         self.critic = keras.Sequential(
             [
-                keras.layers.Dense(64, input_dim=model.state_dim, activation="relu"),
-                keras.layers.Dense(128, activation="relu"),
-                keras.layers.Dense(128, activation="relu"),
+                keras.layers.Dense(128, input_dim=model.state_dim, activation="relu"),
+                keras.layers.Dense(256, activation="relu"),
+                keras.layers.Dense(256, activation="relu"),
                 keras.layers.Dense(128, activation="relu"),
                 keras.layers.Dense(model.action_dim, activation="linear")
             ]
