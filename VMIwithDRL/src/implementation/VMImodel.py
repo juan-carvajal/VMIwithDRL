@@ -1,5 +1,5 @@
 from agent_model.model import Model
-from agent_model.training_agent import TrainingAgent
+from agent_model.training_agent_torch import TrainingAgent
 from implementation.hospital import Hospital
 import numpy as np
 from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -92,6 +92,6 @@ class VMI(Model):
 initial_state = [0, 0, 0, 0, 0]
 #print(tensorflow.test.is_gpu_available())
 model = VMI(4, 100, 5, initial_state, 5, 100)
-agent = TrainingAgent(model=model, runs=100, steps_per_run=365, batch_size=32, epsilon_decay=0.01,network_update_period=10)
-agent.run(validateRuns=10
+agent = TrainingAgent(model=model, runs=200, steps_per_run=365, batch_size=32, epsilon_decay=0.01,network_update_period=10)
+agent.run(#validateRuns=10
           )

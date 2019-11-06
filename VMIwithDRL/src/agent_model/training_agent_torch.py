@@ -4,8 +4,29 @@ from tensorflow import keras
 import numpy as np
 import matplotlib.pyplot as pyplot
 from matplotlib import style
-import objgraph
-import tensorflow
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+
+
+class NN(nn.Module):
+    def __init__(self,model):
+        super(NN, self).__init__()
+        self.l1=nn.Linear(model.state_dim,32)
+        self.l2=nn.Linear(32,64)
+        self.l3=nn.Linear(64,64)
+        self.l4=nn.Linear(64,model.action_dim)
+        
+
+    def forward(self, x):
+        x=self.l1(x)
+        x=F.relu(x)
+        x=self.l2(x)
+        x=F.relu(x)
+        x=self.l3(x)
+        x=F.relu(x)
+        return self.l4(x)
 
 
 
@@ -24,19 +45,9 @@ class TrainingAgent:
 #         strategy=tensorflow.distribute.MirroredStrategy()
 #         with strategy.scope():
             
-        self.q_network = keras.Sequential(
-            [
-                keras.layers.Dense(64, input_dim=model.state_dim, activation="relu"),
-                keras.layers.Dense(128, activation="relu"),
-                keras.layers.Dense(128, activation="relu"),
-                keras.layers.Dense(128, activation="relu"),
-                keras.layers.Dense(model.action_dim, activation="linear")
-            ]
-        )
-    #         filepath="model.hdf5"
-    #         checkpoint = keras.callbacks.ModelCheckpoint(filepath, monitor='accuracy', verbose=0, save_best_only=True, mode='max')
-    #         self.callbacks_list = [checkpoint]
-        self.q_network.compile(optimizer="adam", loss="mse", metrics=["accuracy"])
+        self.q_network=NN(model)
+        self.loss=nn.MSELoss()
+        self.optizer=optim.Adam(self.q_network.parameters())
 
     def run(self , validateRuns=None):
         run_rewards = []
@@ -69,7 +80,10 @@ class TrainingAgent:
                     #print("Picking Random action: ",action)
                 else:
                     # Best Action
-                    action = np.argmax(self.q_network.predict(np.array([current_state]))[0])
+                    #action = np.argmax(self.q_network.predict(np.array([current_state]))[0])
+                    qval,act=torch.max(self.q_network.forward(torch.FloatTensor(current_state)),0)
+                    action=act.item()
+                    #print(action)
                     #print("Picking Best action: ", action)
                 state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
                 total_reward += reward
@@ -98,7 +112,7 @@ class TrainingAgent:
                 terminate = False
                 run_step_count = 0
                 while not terminate:
-                    action = np.argmax(self.q_network.predict(np.array([current_state]))[0])
+                    action=np.argmax(self.q_network.forward(torch.FloatTensor(current_state)))
                     state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
                     total_reward+=reward
                     current_state=next_state
@@ -117,19 +131,30 @@ class TrainingAgent:
             target = reward
 
             if not terminal:
-                target = reward + self.gamma * np.amax(self.q_network.predict(np.array([next_state]))[0])
+                tensor=torch.FloatTensor(next_state)
+                #print(tensor)
+                max,index=torch.max(self.q_network.forward(tensor),0)
+                target = reward + self.gamma * max.item()
+                #print(target)
 
-            target_f = self.q_network.predict(np.array([state]))
-            target_f[0][action] = target
+            target_f = self.q_network.forward(torch.FloatTensor(state))
+            #print(target_f)
+            #print(action)
+            target_f[action] = target
             #print(target_f)
             #x.append(state)
             #y.append(target_f[0])
             #self.q_network.fit(np.array([state]), target_f, epochs=1, verbose=0)
-            self.q_network.train_on_batch(np.array([state]), target_f)
+            eval=self.q_network.forward(torch.FloatTensor(state))
+            self.optizer.zero_grad()
+            loss=self.loss(eval,target_f)
+            loss.backward()
+            self.optizer.step()
+            #self.q_network.train_on_batch(np.array([state]), target_f)
             
             
 
-        keras.backend.clear_session()
+        #keras.backend.clear_session()
         #self.q_network.fit(np.array(x), np.array(y),batch_size=self.batch_size, epochs=1, verbose=0)
 
         # if self.epsilon > self.min_epsilon:
