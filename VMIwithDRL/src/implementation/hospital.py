@@ -25,5 +25,5 @@ class Hospital():
                                        supply[i] - max(0, demand - (
                                                    sum(self.inventory[:i + 1]) + sum(int(v) for v in supply[:i + 1]))))
 
-        self.stockout.append(stockout)
+        #self.stockout.append(stockout)
         return (expired * self.exp_cost) + (stockout * self.stockout_cost)

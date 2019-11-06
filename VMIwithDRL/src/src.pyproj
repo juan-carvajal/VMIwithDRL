@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{d5c71327-30b0-45ca-8bce-45adf79b8f9c}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile />
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>Global|PythonCore|3.7</InterpreterId>
+    <IsWindowsApplication>False</IsWindowsApplication>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="agent_model\model.py" />
+    <Compile Include="agent_model\test.py" />
+    <Compile Include="agent_model\training_agent.py" />
+    <Compile Include="agent_model\__init__.py" />
+    <Compile Include="implementation\hospital.py" />
+    <Compile Include="implementation\VMImodel.py" />
+    <Compile Include="implementation\__init__.py" />
+    <Compile Include="optimizer\AllocationOptimizer.py" />
+    <Compile Include="optimizer\AllocationOptimizerCplexDocPlex.py" />
+    <Compile Include="optimizer\docplex_example.py" />
+    <Compile Include="optimizer\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="agent_model" />
+    <Folder Include="implementation" />
+    <Folder Include="optimizer" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="CondaEnv|CondaEnv|tensor-cpu" />
+    <InterpreterReference Include="Global|PythonCore|3.7" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>
