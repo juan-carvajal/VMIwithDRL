@@ -8,6 +8,7 @@ import timeit
 
 
 
+
 class VMI(Model):
     # LOS ESTADOS DE ESTA CLASE SON LOS NIVELES DE INVENTARIOS QUE TIENE PARA CADA UNA DE LAS CADUCIDADES
     # LAS ACCIONES POSIBLES VAN DESDE 0 HASTA MAX_A
@@ -21,6 +22,9 @@ class VMI(Model):
 
 
     def model_logic(self, state, action):
+        
+        
+        
         demands = [5, 10, 15, 20]
         donors = 100;
         A = action
@@ -87,6 +91,8 @@ class VMI(Model):
         state = state_aux;
 
         return state
+    
+        
 
 
 initial_state = [0, 0, 0, 0, 0]
