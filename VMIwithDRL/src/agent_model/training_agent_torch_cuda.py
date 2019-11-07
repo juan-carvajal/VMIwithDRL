@@ -46,12 +46,14 @@ class TrainingAgent:
 #         with strategy.scope():
             
         self.q_network=NN(model)
+        self.device= torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.q_network.to(self.device)
         self.loss=nn.MSELoss()
         self.optizer=optim.Adam(self.q_network.parameters())
 
     def run(self , validateRuns=None):
        
-       
+        print("Running training on : ",self.device)
         run_rewards = []
         #print(self.q_network.get_weights())
         for run in range(self.runs):
@@ -83,7 +85,7 @@ class TrainingAgent:
                 else:
                     # Best Action
                     #action = np.argmax(self.q_network.predict(np.array([current_state]))[0])
-                    qval,act=torch.max(self.q_network.forward(torch.FloatTensor(current_state)),0)
+                    qval,act=torch.max(self.q_network.forward(torch.FloatTensor(current_state).to(self.device)),0)
                     action=act.item()
                     #print(action)
                     #print("Picking Best action: ", action)
@@ -115,9 +117,8 @@ class TrainingAgent:
                 terminate = False
                 run_step_count = 0
                 while not terminate:
-                    qval,act=torch.max(self.q_network.forward(torch.FloatTensor(current_state)),0)
+                    qval,act=torch.max(self.q_network.forward(torch.FloatTensor(current_state).to(self.device)),0)
                     action=act.item()
-                    #action=np.argmax(self.q_network.forward(torch.FloatTensor(current_state)))
                     state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
                     total_reward+=reward
                     current_state=next_state
@@ -136,13 +137,13 @@ class TrainingAgent:
             target = reward
 
             if not terminal:
-                tensor=torch.FloatTensor(next_state)
+                tensor=torch.FloatTensor(next_state).to(self.device)
                 #print(tensor)
                 max,index=torch.max(self.q_network.forward(tensor),0)
                 target = reward + self.gamma * max.item()
                 #print(target)
 
-            target_f = self.q_network.forward(torch.FloatTensor(state))
+            target_f = self.q_network.forward(torch.FloatTensor(state).to(self.device))
             #print(target_f)
             #print(action)
             target_f[action] = target
@@ -150,9 +151,9 @@ class TrainingAgent:
             #x.append(state)
             #y.append(target_f[0])
             #self.q_network.fit(np.array([state]), target_f, epochs=1, verbose=0)
-            eval=self.q_network.forward(torch.FloatTensor(state))
+            eval=self.q_network.forward(torch.FloatTensor(state).to(self.device))
             self.optizer.zero_grad()
-            loss=self.loss(eval,target_f)
+            loss=self.loss(eval.to(self.device),target_f.to(self.device))
             loss.backward()
             self.optizer.step()
             #self.q_network.train_on_batch(np.array([state]), target_f)
