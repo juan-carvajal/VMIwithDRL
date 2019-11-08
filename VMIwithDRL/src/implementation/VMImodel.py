@@ -4,7 +4,8 @@ from implementation.hospital import Hospital
 import numpy as np
 from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 import timeit
-
+from scipy import stats
+import math
 
 
 
@@ -19,14 +20,13 @@ class VMI(Model):
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
         self.hospitals = [Hospital([0] * shelf_life, None, exp_cost, stockout_cost)] * hospitals
-
-
+        
     def model_logic(self, state, action):
-        
-        
-        
-        demands = [5, 10, 15, 20]
-        donors = 100;
+        demands = self.get_demand()
+        #demands=[5,10,15,20]
+        #donors = 100;
+        donors = self.get_donors()
+        #print(donors)
         A = action
         A_i = [0] * self.shelf_life
         for i, val in enumerate(A_i):
@@ -68,8 +68,9 @@ class VMI(Model):
 
         #print(rep)
         next_state = self.update_inventory_bloodbank(state, donors, action)
-        # print(donors)
-        # print(next_state)
+        ##BORRA ESTO
+        #print(donors)
+        #print(next_state)
 
         reward = state[0] * self.exp_cost
         #print(reward)
@@ -92,6 +93,48 @@ class VMI(Model):
 
         return state
     
+    def get_donors(self):
+        mu = 107.18966
+        desv = 41.754
+        don = np.random.normal(mu, desv, 1)
+        don = math.floor(don)
+        return don
+    
+    
+    
+    def get_demand(self):
+        #VENTA DIRECTA UNION TEMPORAL
+        m = 1.98158
+        c = 1.19697
+        d1 = np.random.lognormal(m,c,1)
+        d1 = self.checkDemand(d1)
+        #HOSPIAL DE SUBA
+        mu2 = 43.18868
+        desv2 = 17.55547
+        d2 = np.random.normal(mu2, desv2, 1)
+        d2 = self.checkDemand(d2)
+        #HOSPITAL SANTA CLARA
+        mu3 = 60.92593
+        desv3 = 19.8692
+        d3 = np.random.normal(mu3, desv3, 1)
+        d3 = self.checkDemand(d3)
+        #MIOCARDIO SAS
+        m1 = 2.90979
+        c1= 0.47093
+        d4 = np.random.lognormal(m1,c1,1)
+        d4 = self.checkDemand(d4)
+        demands = [d1,d2,d3,d4]
+        return demands
+    
+    def checkDemand(self, a):
+        a = math.floor(a)
+        if(a == 0):
+            a = 1
+        return a
+
+        
+        
+       
         
 
 
