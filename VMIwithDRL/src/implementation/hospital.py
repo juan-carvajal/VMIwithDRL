@@ -8,6 +8,7 @@ class Hospital():
         self.stockout = []
 
     def supply(self, supply, demand):
+
         inventory_aux = [0] * len(self.inventory)
 
         expired = self.inventory[0]
