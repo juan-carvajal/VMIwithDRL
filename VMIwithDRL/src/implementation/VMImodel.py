@@ -99,7 +99,7 @@ class VMI(Model):
         desv = 41.754
         don = np.random.normal(mu, desv, 1)
         don = math.floor(don)
-        #don=100
+        don=100
         return don
     
     
@@ -126,7 +126,7 @@ class VMI(Model):
         d4 = np.random.lognormal(m1,c1,1)
         d4 = self.checkDemand(d4)
         demands = [d1,d2,d3,d4]
-        #demands=[10,15,8,11]
+        demands=[10,15,8,11]
         return demands
     
     def checkDemand(self, a):
