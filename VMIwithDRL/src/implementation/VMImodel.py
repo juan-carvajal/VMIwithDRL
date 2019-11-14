@@ -14,12 +14,13 @@ class VMI(Model):
     # LOS ESTADOS DE ESTA CLASE SON LOS NIVELES DE INVENTARIOS QUE TIENE PARA CADA UNA DE LAS CADUCIDADES
     # LAS ACCIONES POSIBLES VAN DESDE 0 HASTA MAX_A
     def __init__(self, hospitals, max_A, shelf_life, initial_state=None, exp_cost=None, stockout_cost=None):
-        super(VMI, self).__init__(initial_state, max_A, shelf_life)
+        super(VMI, self).__init__(initial_state, max_A, len(initial_state))
         self.day = 1
         self.shelf_life = shelf_life
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
         self.hospitals = [Hospital([0] * shelf_life, None, exp_cost, stockout_cost)] * hospitals
+<<<<<<< Updated upstream
 
 
     def model_logic(self, state, action):
@@ -27,6 +28,17 @@ class VMI(Model):
         donors = 100
         demands = self.get_demand()
         #donors = self.get_donors()
+=======
+        
+    def model_logic(self, state, action, run_step_count):
+        
+        day = self.get_day(run_step_count)
+        demands = self.get_demand(day)
+        #demands=[5,10,15,20]
+        #donors = 100;
+        donors = self.get_donors(day)
+        #print(donors)
+>>>>>>> Stashed changes
         A = action
         A_i = [0] * self.shelf_life
         for i, val in enumerate(A_i):
@@ -67,9 +79,16 @@ class VMI(Model):
         rep = opt.allocate()
 
         #print(rep)
+<<<<<<< Updated upstream
         next_state = self.update_inventory_bloodbank(state, donors, action)
         # print(donors)
         # print(next_state)
+=======
+        next_state = self.update_inventory_bloodbank(state, donors, action, run_step_count)
+        ##BORRA ESTO
+        #print(donors)
+        #print(next_state)
+>>>>>>> Stashed changes
 
         reward = state[0] * self.exp_cost
         #print(reward)
@@ -79,19 +98,23 @@ class VMI(Model):
         reward*=-1
         return state, action, next_state, reward, False
 
-    def update_inventory_bloodbank(self, state, donors, action):
+    def update_inventory_bloodbank(self, state, donors, action,run_step_count):
         state_aux = [0] * len(state)
         for i in range(self.shelf_life):
             if (i == 0):
                 state_aux[i] = max(0, state[i + 1] - action)
             elif 0 < i < 4:
                 state_aux[i] = max(0, state[i + 1] - max(0, action - sum(state[:i])))
-            else:
+            elif (i == 4):
                 state_aux[i] = max(0, donors - max(0, action - sum(state[:i])))
 
+
+        state_aux[5]= self.get_day(run_step_count)
+        #print(state_aux)
         state = state_aux;
 
         return state
+<<<<<<< Updated upstream
 
     def get_donors(self):
         
@@ -99,12 +122,42 @@ class VMI(Model):
         mu = 109
         desv = 44.36799
         don = np.random.normal(mu, desv, 1)
+=======
+    
+    def get_donors(self,day):
+        
+        if day == 1:
+            don = np.random.triangular(50,90, 120)
+        
+        elif day ==2:
+            don = np.random.triangular(50,90, 120)
+            
+        elif day ==3:
+            don = np.random.triangular(50,90, 120)
+        
+        elif day ==4:
+            don =  np.random.triangular(50,90, 120)    
+
+        elif day ==5:
+            don = np.random.triangular(50,90, 120)
+        
+        elif day ==6:
+            don = np.random.triangular(50,90, 120)
+        else:
+            don = np.random.triangular(50,90, 120)
+
+        
+        #mu = 107.18966
+        #desv = 41.754
+        #don = np.random.normal(mu, desv, 1)
+>>>>>>> Stashed changes
         don = math.floor(don)
         don=100
         return don
     
     
     
+<<<<<<< Updated upstream
     def get_demand(self):
         #DISTRIBUTION FOR MONDAYS
         #VENTA DIRECTA UNION TEMPORAL
@@ -126,7 +179,78 @@ class VMI(Model):
         m1 = 1.85161
         c1= 5.46852
         d4 = np.random.lognormal(m1,c1,1)
+=======
+    def get_demand(self, day):
+        #VENTA DIRECTA UNION TEMPORAL
+        
+        if day == 1:
+            d1 = np.random.gamma(2.6, 6.1)*0.5
+            d2 = np.random.gamma(2.6, 6.1)*0.3
+            d3 = np.random.gamma(2.6, 6.1)*0.2
+            d4 = np.random.gamma(2.6, 6.1)*0.1
+        
+        elif day ==2:
+            d1 = np.random.gamma(4.9, 9.2)*0.5
+            d2 = np.random.gamma(4.9, 9.2)*0.3
+            d3 = np.random.gamma(4.9, 9.2)*0.2
+            d4 = np.random.gamma(4.9, 9.2)*0.1
+            
+        elif day ==3:
+            d1 = np.random.gamma(6.9, 8.2)*0.5
+            d2 = np.random.gamma(6.9, 8.2)*0.3
+            d3 = np.random.gamma(6.9, 8.2)*0.2
+            d4 = np.random.gamma(6.9, 8.2)*0.1
+        
+        elif day ==4:
+            d1 = np.random.gamma(4.7, 9.3)*0.5
+            d2 = np.random.gamma(4.7, 9.3)*0.3
+            d3 = np.random.gamma(4.7, 9.3)*0.2
+            d4 = np.random.gamma(4.7, 9.3)*0.1              
+
+        elif day ==5:
+            d1 = np.random.gamma(5.7, 8.0)*0.5
+            d2 = np.random.gamma(5.7, 8.0)*0.3
+            d3 = np.random.gamma(5.7, 8.0)*0.2
+            d4 = np.random.gamma(5.7, 8.0)*0.1 
+        
+        elif day ==6:
+            d1 = np.random.gamma(4.8, 8.7)*0.5
+            d2 = np.random.gamma(4.8, 8.7)*0.3
+            d3 = np.random.gamma(4.8, 8.7)*0.2
+            d4 = np.random.gamma(4.8, 8.7)*0.1     
+        else:
+            d1 = np.random.gamma(1.7, 3.2)*0.5
+            d2 = np.random.gamma(1.7, 3.2)*0.3
+            d3 = np.random.gamma(1.7, 3.2)*0.2
+            d4 = np.random.gamma(1.7, 3.2)*0.1  
+                        
+#         c =
+#         d1 = np.random.lognormal(1.98158,1.19697,1)
+#           
+#         #HOSPIAL DE SUBA
+#         mu2 = 43.18868
+#         desv2 = 17.55547
+#         d2 = np.random.normal(mu2, desv2, 1)
+#         
+#         #HOSPITAL SANTA CLARA
+#         mu3 = 60.92593
+#         desv3 = 19.8692
+#         d3 = np.random.normal(mu3, desv3, 1)
+#         
+#         #MIOCARDIO SAS
+#         m1 = 2.90979
+#         c1= 0.47093
+#         d4 = np.random.lognormal(m1,c1,1)
+        
+        
+        
+        
+        d1 = self.checkDemand(d1)
+        d2 = self.checkDemand(d2)
+        d3 = self.checkDemand(d3)
+>>>>>>> Stashed changes
         d4 = self.checkDemand(d4)
+        
         demands = [d1,d2,d3,d4]
         demands=[10,15,8,11]
         return demands
@@ -138,12 +262,27 @@ class VMI(Model):
         return a
 
         
+<<<<<<< Updated upstream
+=======
+    def get_day(self, run_step_count):
+        a = math.floor(run_step_count/7)
+        b = run_step_count - a*7
+        
+        return b+1
+          
+       
+        
+>>>>>>> Stashed changes
 
 
-initial_state = [0, 0, 0, 0, 0]
+initial_state = [0, 0, 0, 0, 0, 1]
 #print(tensorflow.test.is_gpu_available())
 model = VMI(4, 100, 5, initial_state, 5, 100)
 agent = TrainingAgent(model=model, runs=250, steps_per_run=365, batch_size=500,memory=10000,use_gpu=True)
 
+<<<<<<< Updated upstream
 agent.run(validateRuns=10
            )
+=======
+agent.run(validateRuns=10)
+>>>>>>> Stashed changes

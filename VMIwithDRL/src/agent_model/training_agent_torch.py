@@ -94,7 +94,7 @@ class TrainingAgent:
                     #print(action)
                     #print("Picking Best action: ", action)
 
-                state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
+                state, action, next_state, reward, terminal = self.model.model_logic(current_state, action,run_step_count)
                 total_reward += reward
                 self.memory.append((state, action, next_state, reward, terminal))
                 if len(self.memory.memory)> self.batch_size and (run_step_count-1) % self.train_period==0:

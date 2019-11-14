@@ -14,11 +14,18 @@ class NN(nn.Module):
 
     def __init__(self, model):
         super(NN, self).__init__()
+<<<<<<< Updated upstream
         self.norm=nn.LayerNorm(model.state_dim)
         self.l1 = nn.Linear(model.state_dim, 64)
         self.l2 = nn.Linear(64, 128)
         self.l3 = nn.Linear(128, 128)
         self.l4 = nn.Linear(128, model.action_dim)
+=======
+        self.l1 = nn.Linear(model.state_dim, 32)
+        self.l2 = nn.Linear(32, 64)
+        self.l3 = nn.Linear(64,32)
+        self.l4 = nn.Linear(32, model.action_dim)
+>>>>>>> Stashed changes
 
     def forward(self, x):
         x=self.norm(x)
@@ -70,7 +77,7 @@ class TrainingAgent:
                 else:
                     qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
                     action = act.item()
-                state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
+                state, action, next_state, reward, terminal = self.model.model_logic(current_state, action,run_step_count)
                 total_reward += reward
                 self.memory.append((state, action, next_state, reward, terminal))
                 if len(self.memory.memory) >= self.memory.memory.maxlen:
@@ -97,7 +104,7 @@ class TrainingAgent:
                 while not terminate:
                     qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
                     action = act.item()
-                    state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
+                    state, action, next_state, reward, terminal = self.model.model_logic(current_state, action,run_step_count)
                     total_reward += reward
                     current_state = next_state
                     if terminal or run_step_count >= self.step_per_run:
