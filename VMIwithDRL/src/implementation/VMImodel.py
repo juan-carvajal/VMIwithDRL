@@ -1,5 +1,5 @@
 from agent_model.model import Model
-from agent_model.training_agent_torch import TrainingAgent
+from agent_model.training_agent_torch2 import TrainingAgent
 from implementation.hospital import Hospital
 import numpy as np
 from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -76,7 +76,8 @@ class VMI(Model):
         for hosp in range(len(self.hospitals)):
             reward += self.hospitals[hosp].supply(rep[hosp], demands[hosp])
         # print(reward)
-        return state, action, next_state, -reward, False
+        reward*=-1
+        return state, action, next_state, reward, False
 
     def update_inventory_bloodbank(self, state, donors, action):
         state_aux = [0] * len(state)
@@ -99,9 +100,7 @@ class VMI(Model):
         desv = 44.36799
         don = np.random.normal(mu, desv, 1)
         don = math.floor(don)
-        if(don<0):
-            don = don*-1
-        #print(don)
+        #don=100
         return don
     
     
@@ -128,8 +127,8 @@ class VMI(Model):
         c1= 5.46852
         d4 = np.random.lognormal(m1,c1,1)
         d4 = self.checkDemand(d4)
-        #print(d1)
-        demands = [5,10,15,20]
+        demands = [d1,d2,d3,d4]
+        #demands=[10,15,8,11]
         return demands
     
     def checkDemand(self, a):
@@ -144,7 +143,7 @@ class VMI(Model):
 initial_state = [0, 0, 0, 0, 0]
 #print(tensorflow.test.is_gpu_available())
 model = VMI(4, 100, 5, initial_state, 5, 100)
-agent = TrainingAgent(model=model, runs=200, steps_per_run=365, batch_size=32, epsilon_decay=0.01,network_update_period=10)
+agent = TrainingAgent(model=model, runs=1000, steps_per_run=365, batch_size=500,memory=10000,use_gpu=True)
 
 agent.run(validateRuns=10
            )
