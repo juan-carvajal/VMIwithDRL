@@ -14,12 +14,14 @@ class NN(nn.Module):
 
     def __init__(self, model):
         super(NN, self).__init__()
+        self.norm=nn.LayerNorm(model.state_dim)
         self.l1 = nn.Linear(model.state_dim, 64)
         self.l2 = nn.Linear(64, 128)
         self.l3 = nn.Linear(128, 128)
         self.l4 = nn.Linear(128, model.action_dim)
 
     def forward(self, x):
+        x=self.norm(x)
         x = self.l1(x)
         x = F.relu(x)
         x = self.l2(x)
@@ -101,7 +103,7 @@ class TrainingAgent:
                     if terminal or run_step_count >= self.step_per_run:
                         terminate = True
                     run_step_count += 1
-                    print(i, ":", total_reward)
+                print(i, ":", total_reward)
 
     def replay_train(self):
         batch = self.memory.sample(self.batch_size)
