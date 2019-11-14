@@ -127,8 +127,8 @@ class VMI(Model):
         c1= 5.46852
         d4 = np.random.lognormal(m1,c1,1)
         d4 = self.checkDemand(d4)
-        demands = [d1,d2,d3,d4]
-        #demands=[10,15,8,11]
+        #demands = [d1,d2,d3,d4]
+        demands=[10,15,8,11]
         return demands
     
     def checkDemand(self, a):
@@ -143,7 +143,7 @@ class VMI(Model):
 initial_state = [0, 0, 0, 0, 0]
 #print(tensorflow.test.is_gpu_available())
 model = VMI(4, 100, 5, initial_state, 5, 100)
-agent = TrainingAgent(model=model, runs=1000, steps_per_run=365, batch_size=500,memory=10000,use_gpu=True)
+agent = TrainingAgent(model=model, runs=500, steps_per_run=365, batch_size=500,memory=10000,use_gpu=True)
 
 agent.run(validateRuns=10
            )
