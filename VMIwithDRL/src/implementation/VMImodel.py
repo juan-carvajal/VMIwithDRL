@@ -168,8 +168,8 @@ class VMI(Model):
 initial_state = [0, 0, 0, 0, 0,1]
 #print(tensorflow.test.is_gpu_available())
 model = VMI(4, 100, 5, initial_state, 5, 100)
-agent = TrainingAgent(model=model, runs=1000, steps_per_run=365, batch_size=32,memory=5000,use_gpu=True,epsilon_function='log')
-agent.run()
+agent = TrainingAgent(model=model, runs=500, steps_per_run=365, batch_size=32,memory=5000,use_gpu=True,epsilon_function='log')
+agent.run(validateRuns=10)
 
 # agent=QAgent(model,0.9,0.1)
 # agent.run(365, 100)
