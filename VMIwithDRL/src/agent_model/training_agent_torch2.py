@@ -107,33 +107,59 @@ class TrainingAgent:
 
     def replay_train(self):
         batch = self.memory.sample(self.batch_size)
-        states = []
-        actions = []
-        next_states = []
-        rewards = []
-        terminals = []
-        
+        #x=[]
+        #y=[]
         for state, action, next_state, reward, terminal in batch:
-            states.append(state)
-            actions.append(action)
-            next_states.append(next_state)
-            rewards.append(reward)
-            terminals.append(terminal)
-            
-        states = self.tensor.FloatTensor(states)
-        actions = self.tensor.LongTensor(actions)
-        next_states = self.tensor.FloatTensor(next_states)
-        rewards = self.tensor.FloatTensor(rewards)
-   
-        q_eval = self.q_network.forward(states).gather(1, actions.view(len(batch), 1))
-        
-        q_next = self.q_network.forward(next_states).detach()
-       
-        q_target = rewards.view(len(batch), 1) + self.gamma * q_next.max(1)[0].view(len(batch), 1)
-        self.optizer.zero_grad()
-        loss = self.loss(q_eval, q_target)
-        loss.backward()
-        self.optizer.step()
+            target = reward
+
+            if not terminal:
+                tensor=self.tensor.FloatTensor(next_state)
+                #print(tensor)
+                max,index=torch.max(self.q_network.forward(tensor),0)
+                target = reward + self.gamma * max.item()
+                #print(target)
+
+            target_f = self.q_network.forward(self.tensor.FloatTensor(state))
+            #print(target_f)
+            #print(action)
+            target_f[action] = target
+            #print(target_f)
+            #x.append(state)
+            #y.append(target_f[0])
+            #self.q_network.fit(np.array([state]), target_f, epochs=1, verbose=0)
+            eval=self.q_network.forward(self.tensor.FloatTensor(state))
+            self.optizer.zero_grad()
+            loss=self.loss(eval,target_f)
+            loss.backward()
+            self.optizer.step()
+#         batch = self.memory.sample(self.batch_size)
+#         states = []
+#         actions = []
+#         next_states = []
+#         rewards = []
+#         terminals = []
+#         
+#         for state, action, next_state, reward, terminal in batch:
+#             states.append(state)
+#             actions.append(action)
+#             next_states.append(next_state)
+#             rewards.append(reward)
+#             terminals.append(terminal)
+#             
+#         states = self.tensor.FloatTensor(states)
+#         actions = self.tensor.LongTensor(actions)
+#         next_states = self.tensor.FloatTensor(next_states)
+#         rewards = self.tensor.FloatTensor(rewards)
+#    
+#         q_eval = self.q_network.forward(states).gather(1, actions.view(len(batch), 1))
+#         
+#         q_next = self.q_network.forward(next_states).detach()
+#        
+#         q_target = rewards.view(len(batch), 1) + self.gamma * q_next.max(1)[0].view(len(batch), 1)
+#         self.optizer.zero_grad()
+#         loss = self.loss(q_eval, q_target)
+#         loss.backward()
+#         self.optizer.step()
 
 
 class Memory:
