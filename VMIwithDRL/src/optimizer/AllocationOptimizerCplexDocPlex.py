@@ -90,7 +90,8 @@ class AllocationOptimizer():
             mdl.solve()
 
             # The status of the solution is printed to the screen
-            #print(mdl.get_solve_status())
+            
+            
             # print("Status:", LpStatus[prob.status])
 
             a = [[0 for r in range(len(self.R))] for h in range(len(self.H))]
@@ -103,13 +104,23 @@ class AllocationOptimizer():
                 for h in range(4):
                     a[h][r] = x[h, r].solution_value
                     # print("x" + str(h) + str(r), x[h, r].solution_value)
-
+#             print(mdl.get_solve_status())
+#             print(a,'\n')
             return a
 
         except:
             for r in range(5):
                 for h in range(4):
-                    a[h][r] = 0
+                    share=self.A[r]//4
+                    remainder=self.A[r]%4
+                    if h==0:
+                        a[h][r] = share+remainder
+                    else:
+                        a[h][r]=share
+#             print(mdl.get_solve_status())
+#             print(a,'\n')
+#             print(self.A)
+#             print(a,'\n')
             return a
 
 
