@@ -148,29 +148,56 @@ class TrainingAgent:
                 #print(target)
 
             target_f = self.q_network.forward(self.tensor.FloatTensor(state))
-            with torch.no_grad():
-                
-            #target_f=target_f.detach().numpy()
-            
-            #print(target_f)
             #print(target_f)
             #print(action)
-                target_f[action] = target
-            #target_f=self.tensor.FloatTensor(target_f)
+            target_f[action] = target
             #print(target_f)
             #x.append(state)
             #y.append(target_f[0])
             #self.q_network.fit(np.array([state]), target_f, epochs=1, verbose=0)
             eval=self.q_network.forward(self.tensor.FloatTensor(state))
-            #if self.epsilon==0:
-#                 print("Target:",target_f)
-#                 print("Eval:",eval)
             self.optizer.zero_grad()
             loss=self.loss(eval,target_f)
-            if self.epsilon==0:
-                print(loss)
             loss.backward()
             self.optizer.step()
+#         batch = self.memory.sample(self.batch_size)
+#         
+#         #x=[]
+#         #y=[]
+#         for state, action, next_state, reward, terminal in batch:
+#             target = reward
+# 
+#             if not terminal:
+#                 tensor=self.tensor.FloatTensor(next_state)
+#                 #print(tensor)
+#                 max,index=torch.max(self.q_network.forward(tensor),0)
+#                 target = reward + self.gamma * max.item()
+#                 #print(target)
+# 
+#             target_f = self.q_network.forward(self.tensor.FloatTensor(state))
+#             with torch.no_grad():
+#                 
+#             #target_f=target_f.detach().numpy()
+#             
+#             #print(target_f)
+#             #print(target_f)
+#             #print(action)
+#                 target_f[action] = target
+#             #target_f=self.tensor.FloatTensor(target_f)
+#             #print(target_f)
+#             #x.append(state)
+#             #y.append(target_f[0])
+#             #self.q_network.fit(np.array([state]), target_f, epochs=1, verbose=0)
+#             eval=self.q_network.forward(self.tensor.FloatTensor(state))
+#             #if self.epsilon==0:
+# #                 print("Target:",target_f)
+# #                 print("Eval:",eval)
+#             self.optizer.zero_grad()
+#             loss=self.loss(eval,target_f)
+#             if self.epsilon==0:
+#                 print(loss)
+#             loss.backward()
+#             self.optizer.step()
             #self.q_network.train_on_batch(np.array([state]), target_f)
             
             
