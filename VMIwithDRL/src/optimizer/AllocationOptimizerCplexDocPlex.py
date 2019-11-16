@@ -109,14 +109,28 @@ class AllocationOptimizer():
             return a
 
         except:
+#             for r in range(5):
+#                 for h in range(4):
+#                     share=self.A[r]//4
+#                     remainder=self.A[r]%4
+#                     if h==0:
+#                         a[h][r] = share+remainder
+#                     else:
+#                         a[h][r]=share
             for r in range(5):
-                for h in range(4):
-                    share=self.A[r]//4
-                    remainder=self.A[r]%4
-                    if h==0:
-                        a[h][r] = share+remainder
-                    else:
-                        a[h][r]=share
+                
+                val1=int((0.5/1.1) * self.A[r])
+                val2=int((0.3/1.1) * self.A[r])
+                val3=int((0.2/1.1) * self.A[r])
+                val4=int((0.1/1.1) * self.A[r])
+                s=val1+val2+val3+val4
+                dif=self.A[r]-s
+                val1+=dif
+                a[0][r]=val1
+                a[1][r]=val2
+                a[2][r]=val3
+                a[3][r]=val4
+
 #             print(mdl.get_solve_status())
 #             print(a,'\n')
 #             print(self.A)
