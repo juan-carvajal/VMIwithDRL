@@ -80,7 +80,7 @@ class TrainingAgent:
                 else:
                     qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
                     action = act.item()
-                state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
+                state, action, next_state, reward, terminal = self.model.model_logic(current_state, action,(run,run_step_count,False))
                 total_reward += reward
                 self.memory.append((state, action, next_state, reward, terminal))
                 if len(self.memory.memory) >= self.memory.memory.maxlen:
@@ -107,13 +107,14 @@ class TrainingAgent:
                 while not terminate:
                     qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
                     action = act.item()
-                    state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
+                    state, action, next_state, reward, terminal = self.model.model_logic(current_state, action,(run,run_step_count,True))
                     total_reward += reward
                     current_state = next_state
                     if terminal or run_step_count >= self.step_per_run:
                         terminate = True
                     run_step_count += 1
                 print(i, ":", total_reward)
+        return run_rewards
 
     def replay_train(self):
 #         batch = self.memory.sample(self.batch_size)

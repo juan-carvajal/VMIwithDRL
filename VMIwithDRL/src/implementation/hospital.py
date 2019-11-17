@@ -5,7 +5,6 @@ class Hospital():
         self.stockout_cost = stockout_cost
         self.inventory = ii;
         self.demand_dist = demand_dist
-        self.stockout = []
 
     def supply(self, supply, demand):
 
@@ -27,4 +26,4 @@ class Hospital():
                                                    sum(self.inventory[:i + 1]) + sum(int(v) for v in supply[:i + 1]))))
 
         #self.stockout.append(stockout)
-        return (expired * self.exp_cost) + (stockout * self.stockout_cost)
+        return ((expired * self.exp_cost) + (stockout * self.stockout_cost)),stockout,expired
