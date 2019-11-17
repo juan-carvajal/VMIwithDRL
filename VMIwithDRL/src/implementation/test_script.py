@@ -13,10 +13,11 @@ import matplotlib.pyplot as plt
 initial_state = [0, 0, 0, 0, 0,1]
 #print(tensorflow.test.is_gpu_available())
 model = VMI(4, 100, 5, initial_state, 5, 100)
-agent = TrainingAgent(model=model, runs=100, steps_per_run=365, batch_size=32,memory=5000,use_gpu=True,epsilon_function='linear',min_epsilon=0.01)
-rewards=agent.run(validateRuns=100)
+agent = TrainingAgent(model=model, runs=150, steps_per_run=365, batch_size=32,memory=5000,use_gpu=True,epsilon_function='linear',min_epsilon=0.01,epsilon_min_percentage=0.25)
+rewards=agent.run()
 log=model.log
-print(log)
+log_df=pd.DataFrame(log)
+print(log_df)
 
 df=pd.DataFrame(rewards,columns=['rewards'])
 df.reset_index(level=0, inplace=True)
