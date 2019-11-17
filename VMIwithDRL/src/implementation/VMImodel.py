@@ -6,7 +6,7 @@ from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 import timeit
 import math
 from scipy import stats
-from agent_model.q_agent import QAgent
+from agent_model.q_agent2 import QAgent
 
 
 
@@ -20,9 +20,10 @@ class VMI(Model):
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
         self.hospitals = [Hospital([0] * shelf_life, None, exp_cost, stockout_cost)] * hospitals
+        self.log={}
 
 
-    def model_logic(self, state, action):
+    def model_logic(self, state, action,options=None):
         #demands = [5, 10, 15, 20]
         donors = self.get_donors(state[5])
         demands = self.get_demand(state[5])
@@ -53,8 +54,24 @@ class VMI(Model):
 
         reward = state[0] * self.exp_cost
         #print(reward)
+        rewards=[]
+        stockouts=[]
+        expireds=[]
+        
         for hosp in range(len(self.hospitals)):
-            reward += self.hospitals[hosp].supply(rep[hosp], demands[hosp])
+            r,st,exp=self.hospitals[hosp].supply(rep[hosp], demands[hosp])
+            rewards.append(-r)
+            stockouts.append(st)
+            expireds.append(exp)
+            reward += r
+        if options and options[2]==False:
+            year=options[0]
+            data={"rewards":rewards , "stockouts":stockouts,"expirees":expireds,"allocation":rep}
+            if year in self.log:
+                self.log[year].append(data)
+            else:
+                self.log[year]=[]
+                self.log[year].append(data)
         # print(reward)
         reward*=-1
         return state, action, next_state, reward, False
@@ -165,11 +182,7 @@ class VMI(Model):
         
 
 
-initial_state = [0, 0, 0, 0, 0,1]
-#print(tensorflow.test.is_gpu_available())
-model = VMI(4, 100, 5, initial_state, 5, 100)
-agent = TrainingAgent(model=model, runs=1000, steps_per_run=365, batch_size=32,memory=5000,use_gpu=True,epsilon_function='constant',min_epsilon=0.01)
-agent.run(validateRuns=100)
 
-# agent=QAgent(model,0.9,0.1)
-# agent.run(365, 100)
+
+# agent=QAgent(model,0.99,0.1)
+# agent.run(365, 1000)

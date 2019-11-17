@@ -8,5 +8,5 @@ class Model(ABC):
         self.state_dim = state_space_dim
 
     @abstractmethod
-    def model_logic(self, state, action):
+    def model_logic(self, state, action, options=None):
         pass
