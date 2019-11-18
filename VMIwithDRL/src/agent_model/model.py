@@ -10,3 +10,9 @@ class Model(ABC):
     @abstractmethod
     def model_logic(self, state, action, options=None):
         pass
+    
+    
+    
+    @abstractmethod
+    def valid_actions(self, state):
+        pass

@@ -28,7 +28,8 @@ class VMI(Model):
         donors = self.get_donors(state[5])
         demands = self.get_demand(state[5])
         #donors = self.get_donors()
-        A = min(action,sum(state[:self.shelf_life]))
+        #A = min(action,sum(state[:self.shelf_life]))
+        A=action
             
         A_i = [0] * self.shelf_life
         for i, val in enumerate(A_i):
@@ -76,6 +77,15 @@ class VMI(Model):
         # print(reward)
         reward*=-1
         return state, action, next_state, reward, False
+    
+    
+    
+    def valid_actions(self, state):
+        t_inv=sum(state[:self.shelf_life])+1
+        a_max=min(t_inv,self.action_dim)
+        v_act=[*range(a_max)]
+        #print(v_act)
+        return v_act
 
     def update_inventory_bloodbank(self, state, donors, action):
         state_aux = [0] * len(state)

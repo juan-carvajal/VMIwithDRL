@@ -13,9 +13,9 @@ from statistics import mean
 
 initial_state = [0, 0, 0, 0, 0,1]
 #print(tensorflow.test.is_gpu_available())
-train_runs=5
+train_runs=150
 model = VMI(4, 100, 5, initial_state, 5, 100)
-agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32,memory=50,use_gpu=True,epsilon_function='constant',min_epsilon=0.01,epsilon_min_percentage=0.25)
+agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32,memory=5000,use_gpu=True,epsilon_function='constant',min_epsilon=0.01,epsilon_min_percentage=0.1)
 rewards=agent.run()
 log=model.log
 expirees=[]
