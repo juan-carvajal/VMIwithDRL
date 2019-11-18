@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from dask.dataframe.tests.test_rolling import idx
 
 
 class NN(nn.Module):
@@ -76,10 +77,27 @@ class TrainingAgent:
             while not terminate:
                 action = 0
                 if np.random.rand() <= epsilon:
-                    action = random.randrange(self.model.action_dim)
+#                     action = random.randrange(self.model.action_dim)
+                    action=random.choice(self.model.valid_actions(current_state))
                 else:
-                    qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
-                    action = act.item()
+                    
+                    q_vals=self.q_network.forward(self.tensor.FloatTensor(current_state)).cpu().detach().numpy()
+                    val_actions=self.model.valid_actions(current_state)
+                    max_idx=None
+                    max_q=None
+                    for idx, j in enumerate(q_vals):
+                        if idx in val_actions:
+                            if not max_q:
+                                max_q=j
+                                max_idx=idx
+                            else:
+                                if j>max_q:
+                                    max_q=j
+                                    max_idx=idx
+
+#                     qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
+#                     action = act.item()
+                    action=max_idx
                 state, action, next_state, reward, terminal = self.model.model_logic(current_state, action,(run,run_step_count,False))
                 total_reward += reward
                 self.memory.append((state, action, next_state, reward, terminal))
