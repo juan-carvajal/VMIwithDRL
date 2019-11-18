@@ -28,7 +28,8 @@ class VMI(Model):
         donors = self.get_donors(state[5])
         demands = self.get_demand(state[5])
         #donors = self.get_donors()
-        A = action
+        A = min(action,sum(state[:self.shelf_life]))
+            
         A_i = [0] * self.shelf_life
         for i, val in enumerate(A_i):
             if (i == 0):

@@ -182,7 +182,7 @@ class TrainingAgent:
         return max(self.min_epsilon, 1 - (float(run) / float(self.runs - int(self.runs * self.epsilon_min_percentage))))
     
     def log_epsilon(self,run):
-        return max(self.min_epsilon, ((self.min_epsilon -1) / ln((1-self.epsilon_min_percentage)*500)) * ln(run+1) + 1      ) 
+        return max(self.min_epsilon, ((self.min_epsilon -1) / ln((1-self.epsilon_min_percentage)*self.runs)) * ln(run+1) + 1      ) 
 
 
 class Memory:
