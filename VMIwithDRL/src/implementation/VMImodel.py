@@ -67,7 +67,7 @@ class VMI(Model):
             reward += r
         if options and options[2]==False:
             year=options[0]
-            data={"rewards":rewards , "stockouts":stockouts,"expirees":expireds,"allocation":rep}
+            data={"rewards":rewards , "stockouts":stockouts,"expirees":expireds,"allocation":rep,"action":A,"inventory":state[:self.shelf_life],"donors":donors,"reward":reward}
             if year in self.log:
                 self.log[year].append(data)
             else:

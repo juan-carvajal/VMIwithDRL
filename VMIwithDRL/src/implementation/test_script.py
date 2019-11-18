@@ -13,23 +13,30 @@ from statistics import mean
 
 initial_state = [0, 0, 0, 0, 0,1]
 #print(tensorflow.test.is_gpu_available())
-train_runs=150
+train_runs=5
 model = VMI(4, 100, 5, initial_state, 5, 100)
-agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32,memory=5000,use_gpu=True,epsilon_function='log',min_epsilon=0.01,epsilon_min_percentage=0.25)
+agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32,memory=50,use_gpu=True,epsilon_function='constant',min_epsilon=0.01,epsilon_min_percentage=0.25)
 rewards=agent.run()
 log=model.log
 expirees=[]
 stockouts=[]
+dataExport=[]
 for year in range(train_runs):
     stk=0
     exp=0
     for day in range(len(log[year])):
         stk+=mean(log[year][day]["stockouts"])
         exp+=mean(log[year][day]["expirees"])
+        dataExport.append([year,day,log[year][day]["action"]]+log[year][day]["inventory"]+[log[year][day]["reward"]])
     stk=stk/float(len(log[year]))
     exp=stk/float(len(log[year]))
     stockouts.append(stk)
     expirees.append(exp)
+    
+log_export=pd.DataFrame(dataExport)
+log_export.reset_index(level=0, inplace=True)
+log_export.columns=['index','year','day','action','I0','I1','I2','I3','I4','reward']
+log_export.to_csv('data.csv')
     
 log_data={"stockouts":stockouts,"expirees":expirees}
 #print(log_data)
@@ -41,6 +48,8 @@ plt.plot(log_df.index, log_df.stockouts,label='Avg. Stockouts')
 plt.plot(log_df.index, log_df.expirees,label='Avg. Expirees',color='orange')
 plt.legend(loc='upper left')
 plt.show()
+
+
 
 df=pd.DataFrame(rewards,columns=['rewards'])
 df.reset_index(level=0, inplace=True)
