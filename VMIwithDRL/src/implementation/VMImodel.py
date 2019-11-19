@@ -19,7 +19,7 @@ class VMI(Model):
         self.shelf_life = shelf_life
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
-        self.hospitals = [Hospital([0] * shelf_life, None, exp_cost, stockout_cost)] * hospitals
+        self.hospitals = [Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
         self.log={}
 
 
@@ -40,6 +40,7 @@ class VMI(Model):
 
         II = []
         for i in self.hospitals:
+            #print(i.inventory)
             II.append(i.inventory)
 
 
@@ -55,6 +56,7 @@ class VMI(Model):
         # print(next_state)
 
         reward = state[0] * self.exp_cost
+        #reward=0
         #print(reward)
         rewards=[]
         stockouts=[]
@@ -99,9 +101,9 @@ class VMI(Model):
         
         
         state_aux[5] = (state[5]%7) +1         
-        state = state_aux;
+        #state = state_aux;
 
-        return state
+        return state_aux
 
     def get_donors(self,day):
             
@@ -126,6 +128,7 @@ class VMI(Model):
                 don = np.random.triangular(50,90, 120)
     
             don = math.floor(don)
+            #don=100
             return don
     
     
