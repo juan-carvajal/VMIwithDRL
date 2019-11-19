@@ -25,6 +25,7 @@ class AllocationOptimizer():
     def allocate(self):
         try:
             # self.R = list(range(5))
+            #print(self.II)
             RX = list(range(len(self.R)))
             mdl = Model(name='LPOptimizationProblem')
 
