@@ -9,7 +9,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from dask.dataframe.tests.test_rolling import idx
+from math import cos
+from math import pi
 
 
 class NN(nn.Module):
@@ -44,8 +45,10 @@ class TrainingAgent:
             self.epsilon_function=self.log_epsilon
         elif epsilon_function=='constant':
             self.epsilon_function=self.constant_epsilon
+        elif epsilon_function=='cos':
+            self.epsilon_function=self.cos_epsilon
         else:
-            raise Exception('The epsilon_function parameter must be one of these types: (linear, log, constant).')
+            raise Exception('The epsilon_function parameter must be one of these types: (linear, log, constant, cos).')
         self.model = model
         self.memory = Memory(memory)
         self.epsilon = 1
@@ -202,7 +205,14 @@ class TrainingAgent:
     def log_epsilon(self,run):
         return max(self.min_epsilon, ((self.min_epsilon -1) / ln((1-self.epsilon_min_percentage)*self.runs)) * ln(run+1) + 1      ) 
 
-
+    def cos_epsilon(self,run):
+        #((0.5*COS(H5*PI()/5))+0.5)*(1-(H5/350))
+        c=((((1-self.min_epsilon)/2.0)*cos(run*pi/5))+(self.min_epsilon+((1-self.min_epsilon)/2.0)))*(1-(run/((1.0-self.epsilon_min_percentage)*self.runs)))
+        return max(self.min_epsilon,c )
+    
+    
+    
+    
 class Memory:
 
     def __init__(self, max_size):
