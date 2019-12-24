@@ -74,6 +74,7 @@ class TrainingAgent:
             total_reward = 0
 
             epsilon=self.epsilon_function(run)
+            self.model.reset_model()
             current_state = self.model.initial_state
             terminate = False
             run_step_count = 0

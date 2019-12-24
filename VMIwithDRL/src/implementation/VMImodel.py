@@ -2,7 +2,8 @@ from agent_model.model import Model
 from agent_model.training_agent_torch3 import TrainingAgent
 from implementation.hospital import Hospital
 import numpy as np
-from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
+from optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+#from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 import timeit
 import math
 from scipy import stats
@@ -19,7 +20,9 @@ class VMI(Model):
         self.shelf_life = shelf_life
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
-        self.hospitals = [Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
+        self.hospitals = [Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5) for _ in range(hospitals)]
+        #[Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
+        
         self.log={}
 
 
@@ -68,9 +71,11 @@ class VMI(Model):
             stockouts.append(st)
             expireds.append(exp)
             reward += r
+
+        
         if options and options[2]==False:
             year=options[0]
-            data={"rewards":rewards , "stockouts":stockouts,"expirees":expireds,"allocation":rep,"action":A,"inventory":state[:self.shelf_life],"donors":donors,"reward":reward}
+            data={"rewards":rewards , "stockouts":stockouts,"expirees":expireds,"allocation":rep,"action":A,"inventory":state[:self.shelf_life],"donors":donors,"reward":reward,"demands":demands,'DC_expirees':state[0],'II':II}
             if year in self.log:
                 self.log[year].append(data)
             else:
@@ -88,6 +93,10 @@ class VMI(Model):
         v_act=[*range(a_max)]
         #print(v_act)
         return v_act
+    
+    
+    def reset_model(self):
+        self.hospitals = [Hospital([0] * self.shelf_life, None, self.exp_cost*1.5, self.stockout_cost*1.5) for _ in range(len(self.hospitals))]
 
     def update_inventory_bloodbank(self, state, donors, action):
         state_aux = [0] * len(state)

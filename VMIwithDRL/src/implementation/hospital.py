@@ -1,3 +1,4 @@
+
 class Hospital():
 
     def __init__(self, ii=None, demand_dist=None, exp_cost=None, stockout_cost=None):
@@ -26,7 +27,6 @@ class Hospital():
 #                                        supply[i] - max(0, demand - (
 #                                                    sum(self.inventory[:i + 1]) + sum(int(v) for v in supply[:i + 1]))))
 
-        #print(supply,demand,self.inventory,inventory_aux)
         self.inventory=inventory_aux
         #self.stockout.append(stockout)
         return ((expired * self.exp_cost) + (stockout * self.stockout_cost)),stockout,expired
@@ -43,8 +43,9 @@ class Hospital():
         d=demand
         for i in range(len(inventory_aux)):
             if d >0:
-                rest=inventory_aux[i] if inventory_aux[i]-d <0 else d
+                rest=inventory_aux[i] if d>inventory_aux[i] else d
                 inventory_aux[i]-=rest
                 d-=rest
+                
         return inventory_aux
         
