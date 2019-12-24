@@ -16,3 +16,7 @@ class Model(ABC):
     @abstractmethod
     def valid_actions(self, state):
         pass
+    
+    @abstractmethod
+    def reset_model(self):
+        pass
