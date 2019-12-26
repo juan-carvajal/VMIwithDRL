@@ -18,7 +18,7 @@ class VMI(Model):
         self.shelf_life = shelf_life
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
-        self.hospitals = [Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5) for _ in range(hospitals)]
+        self.hospitals = [Hospital([0] * shelf_life, None, exp_cost, stockout_cost) for _ in range(hospitals)]
         #[Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
         
         self.log={}
