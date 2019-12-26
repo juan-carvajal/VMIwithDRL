@@ -18,7 +18,7 @@ class VMI(Model):
         self.shelf_life = shelf_life
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
-        self.hospitals = [Hospital([0] * shelf_life, None, exp_cost, stockout_cost) for _ in range(hospitals)]
+        self.hospitals = [Hospital([0] * shelf_life, None, 1.5*exp_cost, stockout_cost) for _ in range(hospitals)]
         #[Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
         
         self.log={}
@@ -94,7 +94,7 @@ class VMI(Model):
     
     
     def reset_model(self):
-        self.hospitals = [Hospital([0] * self.shelf_life, None, self.exp_cost*1.5, self.stockout_cost*1.5) for _ in range(len(self.hospitals))]
+        self.hospitals = [Hospital([0] * self.shelf_life, None, self.exp_cost*1.5, self.stockout_cost) for _ in range(len(self.hospitals))]
 
     def update_inventory_bloodbank(self, state, donors, action):
         state_aux = [0] * len(state)
