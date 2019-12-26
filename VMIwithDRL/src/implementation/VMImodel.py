@@ -1,13 +1,11 @@
-from agent_model.model import Model
-from agent_model.training_agent_torch3 import TrainingAgent
-from implementation.hospital import Hospital
+from .hospital import Hospital
 import numpy as np
-from optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+from .optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+from agent_model.model import Model
 #from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 import timeit
 import math
 from scipy import stats
-from agent_model.q_agent2 import QAgent
 
 
 
