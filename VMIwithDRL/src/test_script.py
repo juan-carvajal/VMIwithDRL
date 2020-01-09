@@ -13,28 +13,34 @@ from statistics import mean
 
 initial_state = [0, 0, 0, 0, 0,1]
 #print(tensorflow.test.is_gpu_available())
-train_runs=150
+train_runs=50
 model = VMI(4, 100, 5, initial_state, 50, 100)
-agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=150,memory=5000,use_gpu=True,epsilon_function='linear',min_epsilon=0.01,epsilon_min_percentage=0.2)
+agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=150,memory=5000,use_gpu=False,epsilon_function='linear',min_epsilon=0.01,epsilon_min_percentage=0.2)
 rewards=agent.run()
 log=model.log
 expirees=[]
 stockouts=[]
 dc_expirees=[]
 dataExport=[]
+opt_use=[]
 for year in range(train_runs):
     stk=0
     exp=0
     dc_exp=0
+    opt=0
     for day in range(len(log[year])):
         stk+=sum(log[year][day]["stockouts"])
         exp+=sum(log[year][day]["expirees"])
         dc_exp+=log[year][day]["DC_expirees"]
         #all=[list(x) for x in zip(*log[year][day]["allocation"])]
+        if log[year][day]['Used_LP_Model']:
+            opt+=1
+            
         all=log[year][day]["allocation"]
         a=[year,day,log[year][day]["action"]]+log[year][day]["inventory"]+[log[year][day]["reward"]]+log[year][day]["demands"]+[log[year][day]["donors"]]+log[year][day]["stockouts"]+log[year][day]["expirees"]+[log[year][day]["DC_expirees"]]+[item for sublist in all for item in sublist]+[item for sublist in log[year][day]["II"] for item in sublist]
         dataExport.append(a)
-
+        
+    opt_use.append(opt/len(log[year]))
     stockouts.append(stk)
     expirees.append(exp)
     dc_expirees.append(dc_exp)
@@ -67,3 +73,9 @@ plt.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange')
 plt.legend(loc='upper left')
 plt.show()
 
+opt_df=pd.DataFrame(opt_use,columns=['opt'])
+opt_df.reset_index(level=0, inplace=True)
+opt_df.columns=['index','opt']
+plt.plot(opt_df.index, opt_df.opt, label='Opt. Model Use')
+plt.legend(loc='upper left')
+plt.show()

@@ -1,6 +1,6 @@
 from implementation.hospital import Hospital
 import numpy as np
-from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerGoalProgramming import AllocationOptimizer
 from agent_model.model import Model
 #from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 import timeit
@@ -49,7 +49,7 @@ class VMI(Model):
                                   len(self.hospitals))
 
         # opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life, len(self.hospitals))
-        rep = opt.allocate()
+        rep , used_model = opt.allocate()
 
         #print(rep)
         next_state = self.update_inventory_bloodbank(state, donors, action)
@@ -73,7 +73,7 @@ class VMI(Model):
         
         if options and options[2]==False:
             year=options[0]
-            data={"rewards":rewards , "stockouts":stockouts,"expirees":expireds,"allocation":rep,"action":A,"inventory":state[:self.shelf_life],"donors":donors,"reward":reward,"demands":demands,'DC_expirees':state[0],'II':II}
+            data={"rewards":rewards , "stockouts":stockouts,"expirees":expireds,"allocation":rep,"action":A,"inventory":state[:self.shelf_life],"donors":donors,"reward":reward,"demands":demands,'DC_expirees':state[0],'II':II , 'Used_LP_Model':used_model}
             if year in self.log:
                 self.log[year].append(data)
             else:
