@@ -107,7 +107,7 @@ class AllocationOptimizer():
                     # print("x" + str(h) + str(r), x[h, r].solution_value)
 #             print(mdl.get_solve_status())
 #             print(a,'\n')
-            return a
+            return a,True
 
         except:
 #             for r in range(5):
@@ -136,7 +136,7 @@ class AllocationOptimizer():
 #             print(a,'\n')
 #             print(self.A)
 #             print(a,'\n')
-            return a
+            return a,False
 
 
 #

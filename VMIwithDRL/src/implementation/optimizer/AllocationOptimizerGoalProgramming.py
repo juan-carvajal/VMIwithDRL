@@ -3,7 +3,7 @@ from collections import namedtuple
 import docplex.mp
 from docplex.mp.model import Model
 from docplex.util.environment import get_environment
-
+import logging
 
 # from __future__ import print_function
 
@@ -80,7 +80,7 @@ class AllocationOptimizer():
             #Constraint 5
 
             #mdl.add_constraints(F[h] <= (1/len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) for h in self.H)
-            mdl.add_constraint(cons5[h] == F[h] - (1/len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) for h in self.H )
+            mdl.add_constraints(cons5[h] == F[h] - (1/len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) for h in self.H )
 
 
 
@@ -88,27 +88,27 @@ class AllocationOptimizer():
                 mdl.add_constraint(self.A[r] >= mdl.sum([x[h, r] for (h) in self.H]))
                 
             #Constraint 7   
-            for h in self.H:
-                mdl.add_constraint(cons7_plus[h] == 
-                                   (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
-                h] - (
-                                       mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
-                               self.D[h+1]
+            # for h in self.H[:-1]:
+            #     mdl.add_constraint(cons7_plus[h] == 
+            #                        (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
+            #     h] - (
+            #                            mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
+            #                    self.D[h+1]
                                    
                                    
                                    
-                                   )
+            #                        )
                 
-            for h in self.H:
-                mdl.add_constraint(
-                                   (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
-                h] - (
-                                       mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
-                               self.D[h+1] +cons7_plus[h]- cons7_minus[h]==0
+            # for h in self.H[:-1]:
+            #     mdl.add_constraint(
+            #                        (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
+            #     h] - (
+            #                            mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
+            #                    self.D[h+1] +cons7_plus[h]- cons7_minus[h]==0
                                    
                                    
                                    
-                                   )
+            #                        )
                 
                 
             
@@ -147,7 +147,8 @@ class AllocationOptimizer():
 #             print(a,'\n')
             return a,True
 
-        except:
+        except Exception as e:
+            #logging.exception("An exception was thrown!")
 #             for r in range(5):
 #                 for h in range(4):
 #                     share=self.A[r]//4
