@@ -13,7 +13,7 @@ from statistics import mean
 
 initial_state = [0, 0, 0, 0, 0,1]
 #print(tensorflow.test.is_gpu_available())
-train_runs=100
+train_runs=150
 model = VMI(4, 100, 5, initial_state, 50, 100)
 agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=150,memory=5000,use_gpu=False,epsilon_function='linear',min_epsilon=0.01,epsilon_min_percentage=0.2)
 rewards=agent.run()
