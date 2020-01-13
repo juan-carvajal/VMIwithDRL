@@ -1,4 +1,4 @@
-\documentclass{paper}
+\documentclass{elsarticle}
 
 %\usepackage{lineno,hyperref}
 %\modulolinenumbers[5]
@@ -18,13 +18,14 @@
 %\bibliographystyle{model1a-num-names}
 
 %% Harvard
-\bibliographystyle{model2-names.bst}\biboptions{authoryear}
+%\bibliographystyle{model2-names.bst}\biboptions{authoryear}
 
 %% Vancouver numbered
 %\usepackage{numcompress}\bibliographystyle{model3-num-names}
 
 %% Vancouver name/year
-%\usepackage{numcompress}\bibliographystyle{model4-names}\biboptions{authoryear}
+\usepackage{numcompress}\bibliographystyle{model4-names}
+\biboptions{authoryear}
 
 %% APA style
 %\bibliographystyle{model5-names}\biboptions{authoryear}
@@ -44,11 +45,11 @@
 
 \author[1]{Andres F. Osorio}
 \author[2]{Juan D. Carvajal}
-\author[3]{Laura Hincapie}
+
 
 \address[1]{afosorio@icesi.edu.co}
 \address[2]{juan030698@hotmail.com}
-\address[3]{lauhincapie97@gmail.com}
+
 
 \begin{abstract}
 This template helps you to create a properly formatted \LaTeX\ manuscript.
@@ -68,6 +69,9 @@ This template helps you to create a properly formatted \LaTeX\ manuscript.
 \section{Methodology}
 
 		The deep reinforcement learning model model was developed using the Tensorflow, the integer programming model was solved using pulp the integration was carried out using the Python
+		
+		\cite{Feynman1963118}
+		\cite{Dirac1953888}
 		
 	\subsection{Two Stage Deep Reinforcement Learning Framework}
 	
