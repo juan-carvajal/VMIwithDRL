@@ -34,16 +34,16 @@ class AllocationOptimizer():
             F = mdl.integer_var_dict(self.H, 0, None, "Fh")
             YI0 = mdl.binary_var_dict(self.H)
             YF = mdl.binary_var_dict(self.H)
-            # cons5 = mdl.continuous_var_dict(self.H, None, None, "Constraint5")
-            # cons7_plus = mdl.continuous_var_dict(self.H, None, None, "Constraint7+")
-            # cons7_minus = mdl.continuous_var_dict(self.H, None, None, "Constraint7-")
+            cons5 = mdl.continuous_var_dict(self.H, None, None, "Constraint5")
+            cons7_plus = mdl.continuous_var_dict(self.H, None, None, "Constraint7+")
+            cons7_minus = mdl.continuous_var_dict(self.H, None, None, "Constraint7-")
             
             
-            # coeff=[1.0 , -1.0 , 1.0 , -1.0]
+            coeff=[1.0 , -1.0 , 1.0 , -1.0]
             
 
-            #mdl.minimize(mdl.sum(coeff[0]*I0[h] * self.CV + F[h] * self.CF   + coeff[1]*cons5[h] + coeff[2]*cons7_plus[h] + coeff[3]*cons7_minus[h]   for h in self.H))
-            mdl.minimize(mdl.sum(I0[h] * self.CV + F[h] * self.CF for h in self.H))
+            mdl.minimize(mdl.sum(coeff[0]*I0[h] * self.CV + F[h] * self.CF   + coeff[1]*cons5[h] + coeff[2]*cons7_plus[h] + coeff[3]*cons7_minus[h]   for h in self.H))
+            # mdl.minimize(mdl.sum(I0[h] * self.CV + F[h] * self.CF for h in self.H))
 
             mdl.add_constraints([- self.II[h][1] - x[h, 0] + self.D[h] <= self.M * YI0[h] for h in self.H])
 
@@ -80,8 +80,8 @@ class AllocationOptimizer():
 
             #Constraint 5
 
-            #mdl.add_constraints(F[h] <= (1/len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) for h in self.H)
-            #mdl.add_constraints(cons5[h] == F[h] - (1/len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) for h in self.H )
+            # mdl.add_constraints(F[h] <= (1/len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) for h in self.H)
+            mdl.add_constraints(cons5[h] == F[h] - (1/len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) for h in self.H )
 
 
 
@@ -90,26 +90,26 @@ class AllocationOptimizer():
                 
             #Constraint 7   
             # for h in self.H[:-1]:
-            #     mdl.add_constraint(cons7_plus[h] == 
+            #     mdl.add_constraint(cons7_plus[h] ==
             #                        (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
             #     h] - (
             #                            mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
             #                    self.D[h+1]
-                                   
-                                   
-                                   
-            #                        )
+            #
+            #
+            #
+            #                         )
                 
-            # for h in self.H[:-1]:
-            #     mdl.add_constraint(
-            #                        (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
-            #     h] - (
-            #                            mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
-            #                    self.D[h+1] +cons7_plus[h]- cons7_minus[h]==0
+            for h in self.H[:-1]:
+                mdl.add_constraint(
+                                   (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
+                h] - (
+                                       mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
+                               self.D[h+1] +cons7_plus[h]- cons7_minus[h]==0
                                    
                                    
                                    
-            #                        )
+                                   )
                 
                 
             
