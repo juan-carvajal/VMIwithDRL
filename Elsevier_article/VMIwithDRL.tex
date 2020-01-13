@@ -1,0 +1,256 @@
+\documentclass{paper}
+
+%\usepackage{lineno,hyperref}
+%\modulolinenumbers[5]
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%% Elsevier bibliography styles
+%%%%%%%%%%%%%%%%%%%%%%%
+%% To change the style, put a % in front of the second line of the current style and
+%% remove the % from the second line of the style you would like to use.
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Numbered
+%\bibliographystyle{model1-num-names}
+
+%% Numbered without titles
+%\bibliographystyle{model1a-num-names}
+
+%% Harvard
+\bibliographystyle{model2-names.bst}\biboptions{authoryear}
+
+%% Vancouver numbered
+%\usepackage{numcompress}\bibliographystyle{model3-num-names}
+
+%% Vancouver name/year
+%\usepackage{numcompress}\bibliographystyle{model4-names}\biboptions{authoryear}
+
+%% APA style
+%\bibliographystyle{model5-names}\biboptions{authoryear}
+
+% AMA style
+%\usepackage{numcompress}\bibliographystyle{model6-num-names}
+
+%% `Elsevier LaTeX' style
+%\bibliographystyle{elsarticle-num}
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Vendor Managed Inventory Problem for Blood Platelets: a Two Stage Deep Reinforcement Learning Approach}
+
+\author[1]{Andres F. Osorio}
+\author[2]{Juan D. Carvajal}
+\author[3]{Laura Hincapie}
+
+\address[1]{afosorio@icesi.edu.co}
+\address[2]{juan030698@hotmail.com}
+\address[3]{lauhincapie97@gmail.com}
+
+\begin{abstract}
+This template helps you to create a properly formatted \LaTeX\ manuscript.
+\end{abstract}
+
+
+\end{frontmatter}
+
+%\linenumbers
+
+\section{Introduction}
+
+\section{Literature Review}
+
+\section{Problem Definition}
+
+\section{Methodology}
+
+		The deep reinforcement learning model model was developed using the Tensorflow, the integer programming model was solved using pulp the integration was carried out using the Python
+		
+	\subsection{Two Stage Deep Reinforcement Learning Framework}
+	
+	In our framework, deep reinforcement learning is used to represent the actual of the blood centre, incorporating variability in donation and demand. Features such as perishability. Integer programming is used to support decisions concerning the allocation of blood platelets to the hospitals.
+
+
+\subsection{Deep Reinforcement Learning}
+
+
+\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle Q(s_{t},a_{t}) \longleftarrow  (1 - \alpha ).Q(s_{t},a_{t}) + \alpha .(r_{t} + \gamma . \max Q(s_{t+1},a))\\
+	\end{array}
+	\label{eq:Eq32}
+	\end{equation}	
+		
+
+
+
+\subsection{Integer Programming Model}
+
+		
+	\textbf{Objective Function}
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	\min  & \displaystyle\sum\limits_{h \in H}&(I_{h0}CV + F_{h}CF)\\
+	\end{array}
+	\label{eq:Eq31}
+	\end{equation}
+
+	\textbf{Constraints}
+	
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle I_{h0} = \max(0, I_{h1} + X_{h1} - D_{h})\\
+	\end{array}
+	\label{eq:Eq32}
+	\end{equation}	
+		
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle F_{h} = \max(0, D_{h} - &\sum\limits_{r \in R}(I_{hr} + X_{hr}))\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+	
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle F_{h} \leq \frac{1}{\| H \|} &\sum\limits_{h \in H}(F_{h})\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+	
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle A_{r} = \sum\limits_{h \in H}(X_{hr})\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle \frac{\sum\limits_{r \in R}(I_{hr}+X_{hr})}{D_{h}} = \frac {\sum\limits_{r \in R}(I_{h+1r}+X_{h+1r})}{D_{h+1}} \ \ \forall h<4 \\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+Constraints 2 and 3 can be linearised as follows:
+ 
+
+Linearisation Equation 2
+  	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle -I_{h1} - X_{h1} + D_{h} \leq M*YI_{h0} \ \ \forall \ \ h\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+
+  	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle I_{h1} + X_{h1} - D_{h} \leq M(1-YI_{h0}) \ \ \forall \ \ h\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+  	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle I_{h0} \geq 0 \ \ \forall \ \ h\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+
+  	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle I_{h0} \geq I_{h1} + X_{h1} - D_{h} \ \ \forall \ \ h\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+  	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle I_{h0} \leq M(1-YI_{h0}) \ \ \forall \ \ h\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle I_{h0} \leq I_{h1} + X_{h1} - D_{h} +M*YI_{h0} \ \ \forall h\\
+	\end{array}
+	\label{eq:Eq32}
+	\end{equation}	
+	
+	
+Linearisation Equation 3
+	
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle - D_{h} + \sum\limits_{r \in R}(I_{hr} + X_{hr}) \leq M*YF_{h} \ \ \forall h\\
+	\end{array}
+	\label{eq:Eq32}
+	\end{equation}	
+	
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle D_{h} - \sum\limits_{r \in R}(I_{hr} + X_{hr}) \leq M*(1-YF_{h}) \ \ \forall h\\
+	\end{array}
+	\label{eq:Eq32}
+	\end{equation}	
+	
+	  	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle F_{h} \geq 0 \ \ \forall \ \ h\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+
+  	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle F_{h} \geq D_{h} - \sum\limits_{r \in R}(I_{hr} + X_{hr}) \ \ \forall \ \ h\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+	
+		\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle F_{h} \leq M(1-YF_{h}) \ \ \forall \ \ h\\
+	\end{array}
+	\label{eq:Eq33}	
+	\end{equation}
+
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle F_{h} \leq D_{h} - \sum\limits_{r \in R}(I_{hr} + X_{hr}) +M*YF_{h} \ \ \forall h\\
+	\end{array}
+	\label{eq:Eq32}
+	\end{equation}	
+	
+Once the model has been run, the inventory in each hospital is updated as follows:
+
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle I_{hr} = \max(0, I_{hr+1} + X_{h} - \max(0,D_{h}- \sum\limits_{r \in R}(I_{hr} + X_{hr}))) \ \ \forall h, \ r \neq 0 , 4 \\
+	\end{array}
+	\label{eq:Eq32}
+	\end{equation}	
+
+	
+	\begin{equation}
+	\begin{array}{ll@{}ll}
+	& \displaystyle I_{h4} = \max(0, X_{4} - \max(0,D_{h}- \sum\limits_{r \in R}(I_{hr} + X_{hr})))\\
+	\end{array}
+	\label{eq:Eq32}
+	\end{equation}	
+
+\section{Case study}
+
+\section{Results}
+
+\bibliography{mybibfile}
+
+\end{document}
