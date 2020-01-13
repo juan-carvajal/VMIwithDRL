@@ -129,9 +129,9 @@ class AllocationOptimizer():
             # The status of the solution is printed to the screen
             
             
-            print("Status:", mdl.get_solve_status())
-            print(mdl.solve_details)
-            print(mdl._get_solution())
+            # print("Status:", mdl.get_solve_status())
+            # print(mdl.solve_details)
+            # print(mdl._get_solution())
             a = [[0 for r in range(len(self.R))] for h in range(len(self.H))]
             # mdl.print_solution()
             # print(list(x.values()))
