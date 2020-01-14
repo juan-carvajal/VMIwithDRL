@@ -11,7 +11,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 from math import cos
 from math import pi
-
+from statistics import mean
+import pandas as pd
+import matplotlib.pyplot as plt
 
 class NN(nn.Module):
 
@@ -26,10 +28,12 @@ class NN(nn.Module):
     def forward(self, x):
         #x=self.norm(x)
         x = self.l1(x)
-        x = F.relu(x)
+        #x = F.relu(x)
+        x=F.sigmoid(x)
         x = self.l2(x)
-        x = F.relu(x)
+        x=F.sigmoid(x)
         x = self.l3(x)
+        #x=F.tanh(x)
         x = F.relu(x)
         return self.l4(x)
 
@@ -68,7 +72,7 @@ class TrainingAgent:
         self.optizer = optim.Adam(self.q_network.parameters(),amsgrad =True)
 
     def run(self , validateRuns=None):
-       
+        avg_q_val={}
         run_rewards = []
         for run in range(self.runs):
             total_reward = 0
@@ -98,6 +102,11 @@ class TrainingAgent:
                                 if j>max_q:
                                     max_q=j
                                     max_idx=idx
+                    if(run in avg_q_val):
+                        avg_q_val[run].append(max_q)
+                    else:
+                        avg_q_val[run]=[max_q]
+                    # print('Optimal action used { Qval:',max_q,' Action:',max_idx,' }')
 
 #                     qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
 #                     action = act.item()
@@ -118,6 +127,12 @@ class TrainingAgent:
 #         pyplot.xlabel("Run")
 #         pyplot.ylabel("Total Reward")
 #         pyplot.show()
+        for i in avg_q_val:
+            avg_q_val[i]=mean(avg_q_val[i])
+        #df=pd.DataFrame({da})
+        plt.plot(list(avg_q_val.keys()),list(avg_q_val.values()),label='Avg.Q')
+        plt.legend(loc='upper left')
+        plt.show()
         torch.save(self.q_network, "model")
         if validateRuns:
             print("Validation Runs:")

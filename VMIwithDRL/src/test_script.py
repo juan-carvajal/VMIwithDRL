@@ -10,12 +10,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statistics import mean
 if __name__ == '__main__':
-    initial_state = [0, 0, 0, 0, 0, 1]
+    initial_state = [0, 0, 0, 0, 0, 1,0,0,0,0]
     # print(tensorflow.test.is_gpu_available())
     train_runs = 1000
     model = VMI(4, 100, 5, initial_state, 5, 100)
-    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=5000, use_gpu=False,
-                          epsilon_function='linear', min_epsilon=0.01, epsilon_min_percentage=0.2)
+    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=150, memory=5000, use_gpu=False,
+                          epsilon_function='cos', min_epsilon=0.01, epsilon_min_percentage=0.3)
     rewards = agent.run()
     log = model.log
     expirees = []
@@ -85,6 +85,7 @@ if __name__ == '__main__':
     plt.plot(df.index, df.data, label='Rewards')
     plt.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange')
     plt.legend(loc='upper left')
+    plt.grid(True)
     plt.show()
 
     opt_df = pd.DataFrame(opt_use, columns=['opt'])
