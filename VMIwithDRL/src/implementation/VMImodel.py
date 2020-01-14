@@ -1,6 +1,6 @@
 from implementation.hospital import Hospital
 import numpy as np
-from implementation.optimizer.AllocationOptimizerGoalProgramming import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 import timeit
@@ -49,11 +49,11 @@ class VMI(Model):
         rep, used_model = opt.allocate()
 
         # print(rep)
-        next_state = self.update_inventory_bloodbank(state, donors, action)
+        next_state,dc_exp = self.update_inventory_bloodbank(state, donors, action)
         # print(donors)
         # print(next_state)
 
-        reward = state[0] * self.exp_cost
+        reward = dc_exp * self.exp_cost
         # reward=0
         # print(reward)
         rewards = []
@@ -93,19 +93,33 @@ class VMI(Model):
                           range(len(self.hospitals))]
 
     def update_inventory_bloodbank(self, state, donors, action):
-        state_aux = [0] * len(state)
-        for i in range(self.shelf_life):
-            if (i == 0):
-                state_aux[i] = max(0, state[i + 1] - action)
-            elif 0 < i < 4:
-                state_aux[i] = max(0, state[i + 1] - max(0, action - sum(state[:i])))
-            elif (i == 4):
-                state_aux[i] = max(0, donors - max(0, action - sum(state[:i])))
+        # state_aux = [0] * len(state)
+        # for i in range(self.shelf_life):
+        #     if (i == 0):
+        #         state_aux[i] = max(0, state[i + 1] - action)
+        #     elif 0 < i < 4:
+        #         state_aux[i] = max(0, state[i + 1] - max(0, action - sum(state[:i])))
+        #     elif (i == 4):
+        #         state_aux[i] = max(0, donors - max(0, action - sum(state[:i])))
+        #
+        # state_aux[5] = (state[5] % 7) + 1
+        state_aux=[i for i in state]
+        state_aux[4]+=donors
+        d=action
+        for i in range(len(state_aux)-1):
+            if d > 0:
+                rest = state_aux[i] if d > state_aux[i] else d
+                state_aux[i] -= rest
+                d -= rest
+        dc_exp=state_aux[0]
+        for i in range(len(state_aux) - 1):
+            if i==len(state_aux)-2:
+                state_aux[i]=0
+            else:
+                state_aux[i]=state_aux[i+1]
 
         state_aux[5] = (state[5] % 7) + 1
-        # state = state_aux;
-
-        return state_aux
+        return state_aux,dc_exp
 
     def get_donors(self, day):
 

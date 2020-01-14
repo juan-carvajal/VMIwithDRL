@@ -42,7 +42,7 @@ class AllocationOptimizer():
 #             print(a,'\n')
 #             print(self.A)
 #             print(a,'\n')
-        return a
+        return a,False
 
 
 

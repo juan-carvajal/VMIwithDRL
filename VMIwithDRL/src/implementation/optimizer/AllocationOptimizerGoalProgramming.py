@@ -105,12 +105,12 @@ class AllocationOptimizer():
             #
             #                         )
 
-            #             for h in self.H[:-1]:
-            #                 mdl.add_constraint(
-            #                                    (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
-            #                 h] - ( mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
-            #                                self.D[h+1] - cons7_plus[h]+ cons7_minus[h]==0
-            #                                    )
+            for h in self.H[:-1]:
+                mdl.add_constraint(
+                                   (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
+                h] - ( mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
+                               self.D[h+1] - cons7_plus[h]+ cons7_minus[h]==0
+                                   )
             #
 
             #             mdl.add_constraint((mdl.sum([self.II[0][r] for (r) in self.R]) + mdl.sum([x[0, r] for (r) in self.R])) / self.D[
