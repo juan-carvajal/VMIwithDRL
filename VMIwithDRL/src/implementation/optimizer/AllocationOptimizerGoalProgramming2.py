@@ -47,17 +47,17 @@ class AllocationOptimizer():
                 coeff[3] * cons7_minus[h] for h in self.H))
 
 
-            mdl.add_constraints([- self.II[h][0] - x[h, 0] + self.D[h] <= self.M * YI0[h] for h in self.H])
+            mdl.add_constraints([- self.II[h][1] - x[h, 1] + self.D[h] <= self.M * YI0[h] for h in self.H])
 
-            mdl.add_constraints(self.II[h][0] + x[h, 0] - self.D[h] <= self.M * (1 - YI0[h]) for h in self.H)
+            mdl.add_constraints(self.II[h][1] + x[h, 1] - self.D[h] <= self.M * (1 - YI0[h]) for h in self.H)
 
             mdl.add_constraints(I0[h] >= 0 for h in self.H)
 
-            mdl.add_constraints(I0[h] >= self.II[h][0] + x[h, 0] - self.D[h] for h in self.H)
+            mdl.add_constraints(I0[h] >= self.II[h][1] + x[h, 1] - self.D[h] for h in self.H)
 
             mdl.add_constraints(I0[h] <= self.M * (1 - YI0[h]) for h in self.H)
 
-            mdl.add_constraints(I0[h] <= self.II[h][0] + x[h, 0] - self.D[h] + self.M * YI0[h] for h in self.H)
+            mdl.add_constraints(I0[h] <= self.II[h][1] + x[h, 1] - self.D[h] + self.M * YI0[h] for h in self.H)
 
             ########################################
 
