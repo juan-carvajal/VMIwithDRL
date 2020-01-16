@@ -128,7 +128,8 @@ class TrainingAgent:
 #         pyplot.ylabel("Total Reward")
 #         pyplot.show()
         for i in avg_q_val:
-            avg_q_val[i]=mean(avg_q_val[i])
+            m=avg_q_val[i]
+            avg_q_val[i]=sum(m)/len(m)
         #df=pd.DataFrame({da})
         plt.plot(list(avg_q_val.keys()),list(avg_q_val.values()),label='Avg.Q')
         plt.legend(loc='upper left')
