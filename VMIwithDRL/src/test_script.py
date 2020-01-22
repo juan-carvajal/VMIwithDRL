@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # print(tensorflow.test.is_gpu_available())
     train_runs = 50
     model = VMI(4, 100, 5, initial_state, 5, 100)
-    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=150, memory=5000, use_gpu=False,
+    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=5000, use_gpu=False,
                           epsilon_function='linear', min_epsilon=0.01, epsilon_min_percentage=0.3)
     rewards = agent.run()
     log = model.log

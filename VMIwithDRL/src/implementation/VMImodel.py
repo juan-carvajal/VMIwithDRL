@@ -1,12 +1,13 @@
 from implementation.hospital import Hospital
 import numpy as np
-#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-from implementation.optimizer.AllocationOptimizerGoalProgramming2 import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+# from implementation.optimizer.AllocationOptimizerGoalProgramming2 import AllocationOptimizer
 
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 import timeit
 import math
+import pandas as pd
 from scipy import stats
 
 
@@ -15,19 +16,26 @@ class VMI(Model):
     # LAS ACCIONES POSIBLES VAN DESDE 0 HASTA MAX_A
     def __init__(self, hospitals, max_A, shelf_life, initial_state=None, exp_cost=None, stockout_cost=None):
         super(VMI, self).__init__(initial_state, max_A, len(initial_state))
+        self.year_day=0
         self.day = 1
         self.shelf_life = shelf_life
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
         self.hospitals = [Hospital([0] * shelf_life, None, 1.5 * exp_cost, stockout_cost) for _ in range(hospitals)]
         # [Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
-
+        self.demands_and_donors = pd.read_csv("C:/Users\juan0\Documents\GitHub\VMIwithDRL\VMIwithDRL\src\implementation/run_parameters.csv")
+        #print(self.demands_and_donors)
         self.log = {}
 
     def model_logic(self, state, action, options=None):
         # demands = [5, 10, 15, 20]
-        donors = self.get_donors(state[5])
-        demands = self.get_demand(state[5])
+        demand_data=self.demands_and_donors.iloc[self.year_day]
+        self.year_day+=1
+
+        donors =demand_data["donors"]
+            #self.get_donors(state[5])
+        demands = [demand_data["d1"],demand_data["d2"],demand_data["d3"],demand_data["d4"]]
+            #self.get_demand(state[5])
         # donors = self.get_donors()
         # A = min(action,sum(state[:self.shelf_life]))
         A = action
@@ -51,7 +59,7 @@ class VMI(Model):
         rep, used_model = opt.allocate()
 
         # print(rep)
-        reward=0
+        reward = 0
         rewards = []
         stockouts = []
         expireds = []
@@ -63,15 +71,14 @@ class VMI(Model):
             expireds.append(exp)
             reward += r
 
-
-        next_state,dc_exp = self.update_inventory_bloodbank(state, donors, action , [sum(i.inventory) for i in self.hospitals])
+        next_state, dc_exp = self.update_inventory_bloodbank(state, donors, action,
+                                                             [sum(i.inventory) for i in self.hospitals])
         # print(donors)
         # print(next_state)
 
-        reward +=dc_exp * self.exp_cost
+        reward += dc_exp * self.exp_cost
         # reward=0
         # print(reward)
-
 
         if options and options[2] == False:
             year = options[0]
@@ -95,12 +102,13 @@ class VMI(Model):
         return v_act
 
     def reset_model(self):
+        self.year_day=0
         self.hospitals = [Hospital([0] * self.shelf_life, None, self.exp_cost * 1.5, self.stockout_cost) for _ in
                           range(len(self.hospitals))]
 
-    def update_inventory_bloodbank(self, state, donors, action , hospital_new_inv):
-        state_aux = [0] * (self.shelf_life+1)
-        dc_exp=state[0]
+    def update_inventory_bloodbank(self, state, donors, action, hospital_new_inv):
+        state_aux = [0] * (self.shelf_life + 1)
+        dc_exp = state[0]
         for i in range(self.shelf_life):
             if (i == 0):
                 state_aux[i] = max(0, state[i + 1] - action)
@@ -108,28 +116,28 @@ class VMI(Model):
                 state_aux[i] = max(0, state[i + 1] - max(0, action - sum(state[:i])))
             elif (i == 4):
                 state_aux[i] = max(0, donors - max(0, action - sum(state[:i])))
-        
+
         state_aux[5] = (state[5] % 7) + 1
-        state_aux+=hospital_new_inv
-#         state_aux=[i for i in state]
-#         state_aux[4]+=donors
-#         d=action
-#         for i in range(len(state_aux[:self.shelf_life])):
-#             if d > 0:
-#                 rest = state_aux[i] if d > state_aux[i] else d
-#                 state_aux[i] -= rest
-#                 d -= rest
-#         dc_exp=state_aux[0]
-#         for i in range(len(state_aux[:self.shelf_life])):
-#             if i==self.shelf_life-1:
-#                 state_aux[i]=0
-#             else:
-#                 state_aux[i]=state_aux[i+1]
-# 
-#         state_aux[self.shelf_life] = (state[self.shelf_life] % 7) + 1
-# 
-#         state_aux[self.shelf_life+1:]=hospital_new_inv
-        return state_aux,dc_exp
+        state_aux += hospital_new_inv
+        #         state_aux=[i for i in state]
+        #         state_aux[4]+=donors
+        #         d=action
+        #         for i in range(len(state_aux[:self.shelf_life])):
+        #             if d > 0:
+        #                 rest = state_aux[i] if d > state_aux[i] else d
+        #                 state_aux[i] -= rest
+        #                 d -= rest
+        #         dc_exp=state_aux[0]
+        #         for i in range(len(state_aux[:self.shelf_life])):
+        #             if i==self.shelf_life-1:
+        #                 state_aux[i]=0
+        #             else:
+        #                 state_aux[i]=state_aux[i+1]
+        #
+        #         state_aux[self.shelf_life] = (state[self.shelf_life] % 7) + 1
+        #
+        #         state_aux[self.shelf_life+1:]=hospital_new_inv
+        return state_aux, dc_exp
 
     def get_donors(self, day):
 
