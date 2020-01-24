@@ -40,10 +40,10 @@ class AllocationOptimizer():
             cons7_plus = mdl.continuous_var_dict(self.H, 0, None, "Constraint7+")
             cons7_minus = mdl.continuous_var_dict(self.H, 0, None, "Constraint7-")
 
-            coeff = [1.0, 1.0, 1.0, 1]
+            coeff = [1.0, 1, 1, 1]
 
             mdl.minimize(mdl.sum(
-                coeff[0] * I0[h] * self.CV + F[h] * self.CF + coeff[1] * cons5_plus[h] + coeff[2] * cons7_plus[h] +
+                coeff[0] *( I0[h] * self.CV + F[h] * self.CF) + coeff[1] * cons5_plus[h] + coeff[2] * cons7_plus[h] +
                 coeff[3] * cons7_minus[h] for h in self.H))
 
 
@@ -85,7 +85,7 @@ class AllocationOptimizer():
 
             # Constraint 5
 
-            # mdl.add_constraints(F[h] <= (1/len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) for h in self.H)
+            #mdl.add_constraints(F[h] <= (1/len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) for h in self.H)
             mdl.add_constraints(
                 -cons5_plus[h] + cons5_minus[h] + F[h] - (1 / len(self.H)) * mdl.sum([F[h1] for (h1) in self.H]) == 0
                 for h in self.H)
@@ -105,13 +105,22 @@ class AllocationOptimizer():
             #
             #                         )
 
+            #===================================================================
+            # for h in self.H[:-1]:
+            #     mdl.add_constraint(
+            #                        (((mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
+            #     h]) - (( mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
+            #                    self.D[h+1])) - cons7_plus[h]+ cons7_minus[h]==0
+            #                        )
+            #===================================================================
+    
             for h in self.H[:-1]:
                 mdl.add_constraint(
-                                   (mdl.sum([self.II[h][r] for (r) in self.R]) + mdl.sum([x[h, r] for (r) in self.R])) / self.D[
-                h] - ( mdl.sum([self.II[h+1][r] for (r) in self.R]) + mdl.sum([x[h+1, r] for (r) in self.R])) /
-                               self.D[h+1] - cons7_plus[h]+ cons7_minus[h]==0
-                                   )
-            #
+                               (( mdl.sum([x[h, r] for (r) in self.R])) / self.D[
+            h]) - (mdl.sum([x[h+1, r] for (r) in self.R])) /
+                           self.D[h+1] - cons7_plus[h]+ cons7_minus[h]==0
+                               )
+                    
 
             #             mdl.add_constraint((mdl.sum([self.II[0][r] for (r) in self.R]) + mdl.sum([x[0, r] for (r) in self.R])) / self.D[
             #                 0] == (
@@ -145,6 +154,7 @@ class AllocationOptimizer():
                     # print("x" + str(h) + str(r), x[h, r].solution_value)
             #             print(mdl.get_solve_status())
             #             print(a,'\n')
+            print(mdl._get_solution())
             return a, True
 
         except Exception as e:
@@ -185,9 +195,9 @@ if __name__ == '__main__':
     # D = [5, 5, 5, 5]
     # A = [6, 7, 8, 9, 10]
 
-    II = [[27, 13, 24, 5, 0], [15, 5, 11, 1, 0], [10, 3, 7, 1, 0], [0, 0, 2, 0, 0]]
-    D = [27, 9, 12, 7]
-    A = [0, 0, 37, 28, 0]
+    II = [[9, 0, 4, 0, 0], [0, 0, 21, 0, 21], [0, 0, 13, 5, 9], [0, 0, 23, 0, 0]]
+    D = [15, 11, 2, 9]
+    A = [0, 0, 0, 35, 21]
 
     M = 1000000
     CF = 100
