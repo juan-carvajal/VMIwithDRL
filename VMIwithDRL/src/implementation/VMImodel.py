@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-# from implementation.optimizer.AllocationOptimizerGoalProgramming2 import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerGoalProgramming2 import AllocationOptimizer
 
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -23,7 +23,7 @@ class VMI(Model):
         self.stockout_cost = stockout_cost
         self.hospitals = [Hospital([0] * shelf_life, None, 1.5 * exp_cost, stockout_cost) for _ in range(hospitals)]
         # [Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
-        self.demands_and_donors = pd.read_csv("C:/Users\juan0\Documents\GitHub\VMIwithDRL\VMIwithDRL\src\implementation/run_parameters.csv")
+        self.demands_and_donors = pd.read_csv(r'implementation/run_parameters.csv')
         #print(self.demands_and_donors)
         self.log = {}
 
