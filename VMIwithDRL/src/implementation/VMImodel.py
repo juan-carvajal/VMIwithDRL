@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-from implementation.optimizer.AllocationOptimizerGoalProgramming2 import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -15,8 +15,8 @@ class VMI(Model):
     # LOS ESTADOS DE ESTA CLASE SON LOS NIVELES DE INVENTARIOS QUE TIENE PARA CADA UNA DE LAS CADUCIDADES
     # LAS ACCIONES POSIBLES VAN DESDE 0 HASTA MAX_A
     def __init__(self, hospitals, max_A, shelf_life, initial_state=None, exp_cost=None, stockout_cost=None):
-        super(VMI, self).__init__(initial_state, max_A, len(initial_state))
-        self.year_day=0
+        super(VMI, self).__init__(initial_state, max_A * 11, len(initial_state))
+        self.year_day = 0
         self.day = 1
         self.shelf_life = shelf_life
         self.exp_cost = exp_cost
@@ -24,21 +24,24 @@ class VMI(Model):
         self.hospitals = [Hospital([0] * shelf_life, None, 1.5 * exp_cost, stockout_cost) for _ in range(hospitals)]
         # [Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
         self.demands_and_donors = pd.read_csv(r'implementation/run_parameters.csv')
-        #print(self.demands_and_donors)
+        # print(self.demands_and_donors)
         self.log = {}
 
     def model_logic(self, state, action, options=None):
         # demands = [5, 10, 15, 20]
-        demand_data=self.demands_and_donors.iloc[self.year_day]
-        self.year_day+=1
+        #print(state[:self.shelf_life])
+        demand_data = self.demands_and_donors.iloc[self.year_day]
+        self.year_day += 1
 
-        donors =demand_data["donors"]
-            #self.get_donors(state[5])
-        demands = [demand_data["d1"],demand_data["d2"],demand_data["d3"],demand_data["d4"]]
-            #self.get_demand(state[5])
+        donors = demand_data["donors"]
+        # self.get_donors(state[5])
+        demands = [demand_data["d1"], demand_data["d2"], demand_data["d3"], demand_data["d4"]]
+        # self.get_demand(state[5])
         # donors = self.get_donors()
         # A = min(action,sum(state[:self.shelf_life]))
-        A = action
+        A = action // 11
+        prep_donors = int((((action % 11)*10) / 100.0) * donors)
+        #print(action, A, prep_donors ,sum(demands))
 
         A_i = [0] * self.shelf_life
         for i, val in enumerate(A_i):
@@ -71,7 +74,7 @@ class VMI(Model):
             expireds.append(exp)
             reward += r
 
-        next_state, dc_exp = self.update_inventory_bloodbank(state, donors, action,
+        next_state, dc_exp = self.update_inventory_bloodbank(state, prep_donors, A,
                                                              [sum(i.inventory) for i in self.hospitals])
         # print(donors)
         # print(next_state)
@@ -95,27 +98,29 @@ class VMI(Model):
         return state, action, next_state, reward, False
 
     def valid_actions(self, state):
-        t_inv = sum(state[:self.shelf_life]) + 1
-        a_max = min(t_inv, self.action_dim)
-        v_act = [*range(a_max)]
-        # print(v_act)
-        return v_act
+        t_inv = sum(state[:self.shelf_life])
+        # a_max = min(t_inv, self.action_dim)
+        # v_act = [*range(a_max)]
+
+        v_act2 = [x for x in range(1100) if (x // 11) <= t_inv]
+        #print(t_inv,v_act2)
+        return v_act2
 
     def reset_model(self):
-        self.year_day=0
+        self.year_day = 0
         self.hospitals = [Hospital([0] * self.shelf_life, None, self.exp_cost * 1.5, self.stockout_cost) for _ in
                           range(len(self.hospitals))]
 
-    def update_inventory_bloodbank(self, state, donors, action, hospital_new_inv):
+    def update_inventory_bloodbank(self, state, donors, delivered, hospital_new_inv):
         state_aux = [0] * (self.shelf_life + 1)
         dc_exp = state[0]
         for i in range(self.shelf_life):
             if (i == 0):
-                state_aux[i] = max(0, state[i + 1] - action)
+                state_aux[i] = max(0, state[i + 1] - delivered)
             elif 0 < i < 4:
-                state_aux[i] = max(0, state[i + 1] - max(0, action - sum(state[:i])))
+                state_aux[i] = max(0, state[i + 1] - max(0, delivered - sum(state[:i])))
             elif (i == 4):
-                state_aux[i] = max(0, donors - max(0, action - sum(state[:i])))
+                state_aux[i] = max(0, donors - max(0, delivered - sum(state[:i])))
 
         state_aux[5] = (state[5] % 7) + 1
         state_aux += hospital_new_inv
