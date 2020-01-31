@@ -154,7 +154,7 @@ class AllocationOptimizer():
                     # print("x" + str(h) + str(r), x[h, r].solution_value)
             #             print(mdl.get_solve_status())
             #             print(a,'\n')
-            print(mdl._get_solution())
+            #print(mdl._get_solution())
             return a, True
 
         except Exception as e:
