@@ -27,7 +27,7 @@ def send_mail(email,password):
         msg['Subject'] = 'Training Report'
         msg['From'] = 'juancarvajal3@pepisandbox.com'
         msg['To'] = recipient
-        images=['output/reward.png','output/politic.png','output/model_use.png']
+        images=['output/reward.png','output/politic.png','output/model_use.png','output/q.png']
         for image in images:
             img_data = open(image, 'rb').read()
             image_mime = MIMEImage(img_data, name=os.path.basename(image))
@@ -45,7 +45,6 @@ def send_mail(email,password):
 def test(args):
     email=''
     password=''
-    train_runs=250
     try:
         opts, args = getopt.getopt(args,"r:e:p:",["runs=250","email=","password="])
     except getopt.GetoptError as ex:
@@ -64,7 +63,7 @@ def test(args):
     # print(tensorflow.test.is_gpu_available())
     
     model = VMI(4, 100, 5, initial_state, 5, 100)
-    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=250, memory=730, use_gpu=True,
+    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=500, memory=3500, use_gpu=True,
                           epsilon_function='linear', min_epsilon=0, epsilon_min_percentage=0.4)
     rewards = agent.run()
     log = model.log
