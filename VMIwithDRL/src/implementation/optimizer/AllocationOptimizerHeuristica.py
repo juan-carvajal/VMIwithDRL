@@ -1,8 +1,5 @@
 # Import PuLP modeler functions
 from collections import namedtuple
-import docplex.mp
-from docplex.mp.model import Model
-from docplex.util.environment import get_environment
 
 
 # from __future__ import print_function
