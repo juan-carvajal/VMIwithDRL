@@ -45,6 +45,7 @@ def send_mail(email,password):
 def test(args):
     email=''
     password=''
+    train_runs=250
     try:
         opts, args = getopt.getopt(args,"r:e:p:",["runs=250","email=","password="])
     except getopt.GetoptError as ex:
