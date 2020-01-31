@@ -1,6 +1,5 @@
 from collections import deque
 import random
-from tensorflow import keras
 from numpy import log as ln
 import numpy as np
 import matplotlib.pyplot as pyplot
@@ -41,7 +40,7 @@ class NN(nn.Module):
 class TrainingAgent:
 
     def __init__(self, model,runs,steps_per_run, batch_size, min_epsilon=0.05, gamma=0.99, 
-                  memory=5000, use_gpu=False, epsilon_min_percentage=0.1 , epsilon_function='linear'):
+                  memory=5000, use_gpu=True, epsilon_min_percentage=0.1 , epsilon_function='linear'):
 
         if epsilon_function == 'linear':
             self.epsilon_function=self.linear_epsilon
@@ -68,7 +67,8 @@ class TrainingAgent:
         if self.use_gpu:
             print("Running model on GPU.")
             self.q_network.to("cuda")
-        self.loss = nn.SmoothL1Loss()
+        #self.loss = nn.SmoothL1Loss()
+        self.loss=nn.MSELoss()
         self.optizer = optim.Adam(self.q_network.parameters(),amsgrad =True)
 
     def run(self , validateRuns=None):
@@ -131,10 +131,10 @@ class TrainingAgent:
             m=avg_q_val[i]
             avg_q_val[i]=sum(m)/len(m)
         #df=pd.DataFrame({da})
-        plt.plot(list(avg_q_val.keys()),list(avg_q_val.values()),label='Avg.Q')
-        plt.legend(loc='upper left')
-        plt.show()
-        torch.save(self.q_network, "model")
+        #plt.plot(list(avg_q_val.keys()),list(avg_q_val.values()),label='Avg.Q')
+        #plt.legend(loc='upper left')
+        #plt.show()
+        #torch.save(self.q_network, "model")
         if validateRuns:
             print("Validation Runs:")
             for i in range(validateRuns):
