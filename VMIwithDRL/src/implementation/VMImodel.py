@@ -3,7 +3,11 @@ import numpy as np
 #from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+=======
+from implementation.optimizer.AllocationOptimizerGoalProgramming2 import AllocationOptimizer
+>>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
 =======
 from implementation.optimizer.AllocationOptimizerGoalProgramming2 import AllocationOptimizer
 >>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
@@ -36,6 +40,7 @@ class VMI(Model):
         # demands = [5, 10, 15, 20]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         #print(state[:self.shelf_life])
         demand_data = self.demands_and_donors.iloc[self.year_day]
         self.year_day += 1
@@ -45,6 +50,10 @@ class VMI(Model):
         # self.get_donors(state[5])
         demands = [demand_data["d1"], demand_data["d2"], demand_data["d3"], demand_data["d4"]]
         # self.get_demand(state[5])
+=======
+        donors = self.get_donors(state[5])
+        demands = self.get_demand(state[5])
+>>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
 =======
         donors = self.get_donors(state[5])
         demands = self.get_demand(state[5])
@@ -75,6 +84,10 @@ class VMI(Model):
         # opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life, len(self.hospitals))
         rep, used_model = opt.allocate()
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
 =======
 
 >>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3

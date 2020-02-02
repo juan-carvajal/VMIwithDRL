@@ -17,8 +17,13 @@ if __name__ == '__main__':
     model = VMI(4, 100, 5, initial_state, 5, 100)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
                           epsilon_function='log', min_epsilon=0, epsilon_min_percentage=0.1)
+=======
+    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=150, memory=5000, use_gpu=False,
+                          epsilon_function='linear', min_epsilon=0.01, epsilon_min_percentage=0.3)
+>>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
 =======
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=150, memory=5000, use_gpu=False,
                           epsilon_function='linear', min_epsilon=0.01, epsilon_min_percentage=0.3)

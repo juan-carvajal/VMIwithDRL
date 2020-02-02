@@ -15,7 +15,10 @@ from statistics import mean
 import pandas as pd
 import matplotlib.pyplot as plt
 <<<<<<< HEAD
+<<<<<<< HEAD
 import time
+=======
+>>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
 =======
 >>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
 
@@ -80,7 +83,10 @@ class TrainingAgent:
         run_rewards = []
         for run in range(self.runs):
 <<<<<<< HEAD
+<<<<<<< HEAD
             start_time=time.time()
+=======
+>>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
 =======
 >>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
             total_reward = 0
@@ -131,6 +137,7 @@ class TrainingAgent:
             run_rewards.append(total_reward)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             exec_time=time.time()-start_time
             print("Run: ",run, "Reward: ", total_reward, "Epsilon: ", epsilon ,"ETA: ",exec_time*(self.runs-run-1))
         #         style.use("ggplot")
@@ -141,6 +148,8 @@ class TrainingAgent:
 =======
 =======
 >>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
+=======
+>>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
             print(run, ":", total_reward, ":", epsilon)
 #         style.use("ggplot")
 #         pyplot.scatter(range(0, len(run_rewards)), run_rewards)
@@ -148,6 +157,9 @@ class TrainingAgent:
 #         pyplot.ylabel("Total Reward")
 #         pyplot.show()
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
+=======
 >>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
 =======
 >>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
