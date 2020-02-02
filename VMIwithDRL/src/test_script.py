@@ -9,62 +9,19 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from statistics import mean
-import sys,getopt
-import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
 
-
-
-def send_mail(email,password):
-    with open('recipients.txt','r') as file:
-        recipients=file.read().splitlines()
-    for recipient in recipients:
-        
-        msg = MIMEMultipart()
-        msg['Subject'] = 'Training Report'
-        msg['From'] = 'juancarvajal3@pepisandbox.com'
-        msg['To'] = recipient
-        images=['output/reward.png','output/politic.png','output/model_use.png','output/q.png']
-        for image in images:
-            img_data = open(image, 'rb').read()
-            image_mime = MIMEImage(img_data, name=os.path.basename(image))
-            msg.attach(image_mime)
-
-        s = smtplib.SMTP("smtp.pepipost.com", 587)
-        s.ehlo()
-        s.starttls()
-        s.ehlo()
-        s.login(email, password)
-        s.sendmail('juancarvajal3@pepisandbox.com', recipient, msg.as_string())
-        s.quit()
-
-
-def test(args):
-    email=''
-    password=''
-    try:
-        opts, args = getopt.getopt(args,"r:e:p:",["runs=250","email=","password="])
-    except getopt.GetoptError as ex:
-        print(ex)
-        print('test_script.py -r <runs> -e <email> -p <password>')
-        sys.exit(2)
-    #print(opts)
-    for opt, arg in opts:
-        if opt in ("-r", "--runs"):
-            train_runs = int(arg)
-        elif opt in ("-e","--email"):
-            email=arg
-        elif opt in ("-p","--password"):
-            password=arg
+if __name__ == '__main__':
     initial_state = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
     # print(tensorflow.test.is_gpu_available())
-    
+    train_runs = 50
     model = VMI(4, 100, 5, initial_state, 5, 100)
+<<<<<<< HEAD
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
                           epsilon_function='log', min_epsilon=0, epsilon_min_percentage=0.1)
+=======
+    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=150, memory=5000, use_gpu=False,
+                          epsilon_function='linear', min_epsilon=0.01, epsilon_min_percentage=0.3)
+>>>>>>> ad0fc2e7fc01b79f0ed458e94c2ec1e7ddceedc3
     rewards = agent.run()
     log = model.log
     expirees = []
@@ -116,7 +73,7 @@ def test(args):
                           'H3_A4', 'H4_A0', 'H4_A1', 'H4_A2', 'H4_A3', 'H4_A4', 'H1_II0', 'H1_II1', 'H1_II2', 'H1_II3',
                           'H1_II4', 'H2_II0', 'H2_II1', 'H2_II2', 'H2_II3', 'H2_II4', 'H3_II0', 'H3_II1', 'H3_II2',
                           'H3_II3', 'H3_II4', 'H4_II0', 'H4_II1', 'H4_II2', 'H4_II3', 'H4_II4']
-    log_export.to_csv('output/data.csv')
+    log_export.to_csv('data.csv')
 
     log_data = {"stockouts": stockouts, "expirees": expirees, "dc_expirees": dc_expirees}
     # print(log_data)
@@ -128,15 +85,7 @@ def test(args):
     plt.plot(log_df.index, log_df.expirees, label='Expirees', color='orange')
     plt.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', color='green')
     plt.legend(loc='upper left')
-    if email!='' and password!='':
-        try:
-            plt.savefig('output/politic.png', dpi=300)
-            plt.close()
-        except:
-            pass
-    else:
-        plt.show()
-        
+    plt.show()
 
     df = pd.DataFrame(rewards, columns=['rewards'])
     df.reset_index(level=0, inplace=True)
@@ -146,35 +95,11 @@ def test(args):
     plt.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange')
     plt.legend(loc='upper left')
     plt.grid(True)
-    if email!='' and password!='':
-        try:
-            plt.savefig('output/reward.png', dpi=300)
-            plt.close()
-        except:
-            pass
-    else:
-        plt.show()
+    plt.show()
 
     opt_df = pd.DataFrame(opt_use, columns=['opt'])
     opt_df.reset_index(level=0, inplace=True)
     opt_df.columns = ['index', 'opt']
     plt.plot(opt_df.index, opt_df.opt, label='Opt. Model Use')
     plt.legend(loc='upper left')
-    if email!='' and password!='':
-        try:
-            plt.savefig('output/model_use.png', dpi=300)
-            plt.close()
-        except:
-            pass
-    else:
-        plt.show()
-    if email!='' and password!='':
-        try:
-            send_mail(email,password)
-        except Exception as e:
-            print(e)
-            print("Error sending mails.")
-            
-    
-if __name__ == '__main__':
-    test(sys.argv[1:])
+    plt.show()
