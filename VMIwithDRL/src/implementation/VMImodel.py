@@ -2,8 +2,6 @@ from implementation.hospital import Hospital
 import numpy as np
 #from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
 from implementation.optimizer.AllocationOptimizerGoalProgramming2 import AllocationOptimizer
-#from implementation.optimizer.AllocationOptimizerGPPulp import AllocationOptimizer
-
 
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
