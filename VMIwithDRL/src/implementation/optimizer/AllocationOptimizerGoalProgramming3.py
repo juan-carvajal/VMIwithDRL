@@ -156,6 +156,7 @@ class AllocationOptimizer():
             return a, True
 
         except Exception as e:
+            print(e)
             # logging.exception("An exception was thrown!")
             #             for r in range(5):
             #                 for h in range(4):

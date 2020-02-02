@@ -14,6 +14,7 @@ import os
 from statistics import mean
 import pandas as pd
 import matplotlib.pyplot as plt
+import time
 
 
 class NN(nn.Module):
@@ -77,6 +78,7 @@ class TrainingAgent:
         avg_q_val = {}
         run_rewards = []
         for run in range(self.runs):
+            start_time=time.time()
             total_reward = 0
 
             epsilon = self.epsilon_function(run)
@@ -124,7 +126,8 @@ class TrainingAgent:
                 if self.step_per_run is not None and run_step_count >= self.step_per_run:
                     terminate = True
             run_rewards.append(total_reward)
-            print(run, ":", total_reward, ":", epsilon)
+            exec_time=time.time()-start_time
+            print("Run: ",run, "Reward: ", total_reward, "Epsilon: ", epsilon ,"ETA: ",exec_time*(self.runs-run-1))
         #         style.use("ggplot")
         #         pyplot.scatter(range(0, len(run_rewards)), run_rewards)
         #         pyplot.xlabel("Run")

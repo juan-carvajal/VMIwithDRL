@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-#from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -33,7 +33,8 @@ class VMI(Model):
         demand_data = self.demands_and_donors.iloc[self.year_day]
         self.year_day += 1
 
-        donors = demand_data["donors"]
+        #donors = demand_data["donors"]
+        donors=100
         # self.get_donors(state[5])
         demands = [demand_data["d1"], demand_data["d2"], demand_data["d3"], demand_data["d4"]]
         # self.get_demand(state[5])
@@ -60,7 +61,6 @@ class VMI(Model):
 
         # opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life, len(self.hospitals))
         rep, used_model = opt.allocate()
-
         # print(rep)
         reward = 0
         rewards = []

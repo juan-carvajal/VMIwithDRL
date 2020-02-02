@@ -63,8 +63,8 @@ def test(args):
     # print(tensorflow.test.is_gpu_available())
     
     model = VMI(4, 100, 5, initial_state, 5, 100)
-    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=500, memory=3500, use_gpu=True,
-                          epsilon_function='linear', min_epsilon=0, epsilon_min_percentage=0.4)
+    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
+                          epsilon_function='log', min_epsilon=0, epsilon_min_percentage=0.1)
     rewards = agent.run()
     log = model.log
     expirees = []
