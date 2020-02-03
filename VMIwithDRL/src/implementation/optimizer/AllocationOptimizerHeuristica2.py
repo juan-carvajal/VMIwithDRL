@@ -24,7 +24,12 @@ class AllocationOptimizer():
     # def allocate(self, **kwargs):
     def allocate(self):
         a = [[0 for r in range(len(self.R))] for h in range(len(self.H))]
-        dp=[d/sum(self.D) for d in self.D]
+        needs=[max(0,self.D[index]-sum(self.II[index][1:])) for index in range(len(self.II)) ]
+        sum_need=sum(needs)
+        if sum_need>0:
+            dp=[x/sum(needs) for x in needs]
+        else:
+            dp=[0.25]*len(self.R)
         for r in range(5):
             
             val1=int((dp[0]) * self.A[r])

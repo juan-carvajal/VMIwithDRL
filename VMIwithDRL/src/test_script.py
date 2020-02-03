@@ -40,10 +40,10 @@ def send_mail():
 if __name__ =='__main__':
     initial_state = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
     # print(tensorflow.test.is_gpu_available())
-    train_runs=250
+    train_runs=500
     model = VMI(4, 100, 5, initial_state, 5, 100)
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
-                          epsilon_function='log', min_epsilon=0, epsilon_min_percentage=0.1)
+                          epsilon_function='gompertz', min_epsilon=0, epsilon_min_percentage=0.1)
     rewards = agent.run()
     log = model.log
     expirees = []
@@ -102,10 +102,11 @@ if __name__ =='__main__':
     log_df = pd.DataFrame(log_data)
     log_df.reset_index(level=0, inplace=True)
     # print(log_df)
+    line_tc=0.7
     log_df.columns = ['index', 'stockouts', 'expirees', 'dc_expirees']
-    plt.plot(log_df.index, log_df.stockouts, label='Stockouts')
-    plt.plot(log_df.index, log_df.expirees, label='Expirees', color='orange')
-    plt.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', color='green')
+    plt.plot(log_df.index, log_df.stockouts, label='Stockouts',linewidth=line_tc)
+    plt.plot(log_df.index, log_df.expirees, label='Expirees', color='orange',linewidth=line_tc)
+    plt.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', color='green',linewidth=line_tc)
     plt.legend(loc='upper left')
     plt.savefig('output/politic.png', dpi=300)
     plt.show()
@@ -116,8 +117,8 @@ if __name__ =='__main__':
     df.reset_index(level=0, inplace=True)
     df.columns = ['index', 'data']
     rolling_mean = df.data.rolling(window=50).mean()
-    plt.plot(df.index, df.data, label='Rewards')
-    plt.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange')
+    plt.plot(df.index, df.data, label='Rewards',linewidth=line_tc)
+    plt.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange',linewidth=line_tc)
     plt.legend(loc='upper left')
     plt.grid(True)
     plt.savefig('output/reward.png', dpi=300)
@@ -127,8 +128,8 @@ if __name__ =='__main__':
     opt_df = pd.DataFrame(opt_use, columns=['opt'])
     opt_df.reset_index(level=0, inplace=True)
     opt_df.columns = ['index', 'opt']
-    plt.plot(opt_df.index, opt_df.opt, label='Opt. Model Use')
+    plt.plot(opt_df.index, opt_df.opt, label='Opt. Model Use',linewidth=line_tc)
     plt.legend(loc='upper left')
     plt.savefig('output/model_use.png', dpi=300)
     plt.show()
-    send_mail()
+    #send_mail()

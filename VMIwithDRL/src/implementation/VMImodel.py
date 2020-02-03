@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-from implementation.optimizer.AllocationOptimizerHeuristica2 import AllocationOptimizer
-#from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+# from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -29,18 +29,20 @@ class VMI(Model):
 
     def model_logic(self, state, action, options=None):
         # demands = [5, 10, 15, 20]
-        #print(state[:self.shelf_life])
+        # print(state[:self.shelf_life])
         demand_data = self.demands_and_donors.iloc[self.year_day]
         self.year_day += 1
 
-        donors = demand_data["donors"]
+        # donors = demand_data["donors"]
+        donors = 100
         # self.get_donors(state[5])
         demands = [demand_data["d1"], demand_data["d2"], demand_data["d3"], demand_data["d4"]]
         # self.get_demand(state[5])
         # donors = self.get_donors()
         # A = min(action,sum(state[:self.shelf_life]))
         A = action // 11
-        prep_donors = int((((action % 11)*10) / 100.0) * donors)
+        prep_donors = int((((action % 11) * 10) / 100.0) * donors)
+
         #print(action, A, prep_donors ,sum(demands))
 
         A_i = [0] * self.shelf_life

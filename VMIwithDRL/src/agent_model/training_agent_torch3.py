@@ -1,6 +1,7 @@
 from collections import deque
 import random
 from numpy import log as ln
+from numpy import exp
 import numpy as np
 import torch
 import torch.nn as nn
@@ -36,7 +37,8 @@ class NN(nn.Module):
         x = torch.sigmoid(x)
         x = self.l3(x)
         # x=F.tanh(x)
-        x = F.relu(x)
+        #x = F.relu(x)
+        x = torch.sigmoid(x)
         return self.l4(x)
 
 
@@ -56,8 +58,10 @@ class TrainingAgent:
             self.epsilon_function = self.constant_epsilon
         elif epsilon_function == 'cos':
             self.epsilon_function = self.cos_epsilon
+        elif epsilon_function=='gompertz':
+            self.epsilon_function=self.gompertz_epsilon
         else:
-            raise Exception('The epsilon_function parameter must be one of these types: (linear, log, constant, cos).')
+            raise Exception('The epsilon_function parameter must be one of these types: (linear, log, constant, cos , gompertz).')
         self.model = model
         self.memory = Memory(memory)
         self.epsilon = 1
@@ -75,7 +79,8 @@ class TrainingAgent:
             self.q_network.to("cuda")
         else:
             print("Training model on CPU.")
-        self.loss = nn.SmoothL1Loss()
+        #self.loss = nn.SmoothL1Loss()
+        self.loss=nn.MSELoss()
         self.optizer = optim.Adam(self.q_network.parameters(), amsgrad=True)
 
     def run(self, validateRuns=None):
@@ -161,7 +166,7 @@ class TrainingAgent:
             m = avg_q_val[i]
             avg_q_val[i] = sum(m) / len(m)
         # df=pd.DataFrame({da})
-        plt.plot(list(avg_q_val.keys()), list(avg_q_val.values()), label='Avg.Q')
+        plt.plot(list(avg_q_val.keys()), list(avg_q_val.values()), label='Avg.Q',linewidth=0.5)
         plt.legend(loc='upper left')
         dirname = os.path.dirname(__file__)
         filename = os.path.join(dirname, '../output/q.png')
@@ -253,6 +258,14 @@ class TrainingAgent:
     def log_epsilon(self, run):
         return max(self.min_epsilon,
                    ((self.min_epsilon - 1) / ln((1 - self.epsilon_min_percentage) * self.runs)) * ln(run + 1) + 1)
+
+    def gompertz_epsilon(self,run):
+        m=int((1-self.epsilon_min_percentage)*self.runs)
+        aux=-2*ln(((-2*ln(0.5))/(m-1)))/(m-1)
+        ep=1-(1-self.min_epsilon)*exp((-((m-1)/ 2))*exp(-aux*run))
+        return ep if run<=m else self.min_epsilon
+
+
 
     def cos_epsilon(self, run):
         # ((0.5*COS(H5*PI()/5))+0.5)*(1-(H5/350))
