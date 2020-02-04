@@ -6,9 +6,9 @@ import os
 import concurrent.futures
 
 if __name__ == '__main__':
-    functions = ['log', 'linear', 'cos', 'gompertz']
+    functions = ['log', 'linear', 'cos', 'gompertz','constant','consv2']
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
         # print(tensorflow.test.is_gpu_available())
         train_runs = 500
         results = {executor.submit(

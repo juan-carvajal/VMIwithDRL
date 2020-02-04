@@ -132,7 +132,7 @@ class AllocationOptimizer():
             #                 2] <= (
             #                                        mdl.sum([self.II[3][r] for (r) in self.R]) + mdl.sum([x[3, r] for (r) in self.R])) /
             #                                self.D[3])
-
+            mdl.set_time_limit(5)
             mdl.solve()
 
             # The status of the solution is printed to the screen

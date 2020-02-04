@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-# from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -61,7 +61,9 @@ class VMI(Model):
                                   len(self.hospitals))
 
         # opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life, len(self.hospitals))
+
         rep, used_model = opt.allocate()
+        #print("Day ",self.year_day, rep)
 
         # print(rep)
         reward = 0

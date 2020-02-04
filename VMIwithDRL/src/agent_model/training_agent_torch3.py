@@ -11,6 +11,7 @@ from math import cos
 from math import pi
 import matplotlib.pyplot as plt
 import os
+from statistics import mean
 import time
 
 import time
@@ -30,22 +31,19 @@ class NN(nn.Module):
         # x=self.norm(x)
         x = self.l1(x)
         # x = F.relu(x)
-        x=torch.sigmoid(x)
-        #x = F.sigmoid(x)
+        x = torch.sigmoid(x)
+        # x = F.sigmoid(x)
         x = self.l2(x)
-        #x = F.sigmoid(x)
+        # x = F.sigmoid(x)
         x = torch.sigmoid(x)
         x = self.l3(x)
         # x=F.tanh(x)
-        #x = F.relu(x)
+        # x = F.relu(x)
         x = torch.sigmoid(x)
         return self.l4(x)
 
 
-
 class TrainingAgent:
-
-
 
     def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.99,
                  memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear'):
@@ -58,10 +56,13 @@ class TrainingAgent:
             self.epsilon_function = self.constant_epsilon
         elif epsilon_function == 'cos':
             self.epsilon_function = self.cos_epsilon
-        elif epsilon_function=='gompertz':
-            self.epsilon_function=self.gompertz_epsilon
+        elif epsilon_function == 'gompertz':
+            self.epsilon_function = self.gompertz_epsilon
+        elif epsilon_function == 'consv2':
+            self.epsilon_function = self.constant_v2_epsilon
         else:
-            raise Exception('The epsilon_function parameter must be one of these types: (linear, log, constant, cos , gompertz).')
+            raise Exception(
+                'The epsilon_function parameter must be one of these types: (linear, log, constant, cos , gompertz, consv2).')
         self.model = model
         self.memory = Memory(memory)
         self.epsilon = 1
@@ -79,13 +80,14 @@ class TrainingAgent:
             self.q_network.to("cuda")
         else:
             print("Training model on CPU.")
-        #self.loss = nn.SmoothL1Loss()
-        self.loss=nn.MSELoss()
+        self.loss = nn.SmoothL1Loss()
+        #self.loss = nn.MSELoss()
         self.optizer = optim.Adam(self.q_network.parameters(), amsgrad=True)
 
     def run(self, validateRuns=None):
         avg_q_val = {}
         run_rewards = []
+        time_sum = deque(maxlen=10)
         for run in range(self.runs):
 
             start_time = time.time()
@@ -97,6 +99,7 @@ class TrainingAgent:
             current_state = self.model.initial_state
             terminate = False
             run_step_count = 0
+            memory_full_at_start=len(self.memory.memory) >= self.memory.memory.maxlen
             while not terminate:
                 action = 0
                 if np.random.rand() <= epsilon:
@@ -138,15 +141,20 @@ class TrainingAgent:
                     terminate = True
             run_rewards.append(total_reward)
 
-            exec_time = time.time() - start_time
-            eta = exec_time * (self.runs - run - 1)
-            eta_hours = eta / 3600.0
-            eta_minutes = int((eta_hours - int(eta_hours)) * 60)
-            eta_hours=int(eta_hours)
+            if memory_full_at_start:
+                exec_time = time.time() - start_time
+                time_sum.append(exec_time)
+                time_avg =mean(time_sum)
+                eta = time_avg * (self.runs - run - 1)
+                eta_hours = eta / 3600.0
+                eta_minutes = int((eta_hours - int(eta_hours)) * 60)+1
+                eta_hours = int(eta_hours)
 
-
-            print('\rRun: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || ETA: {3:2d} hours {4:2d} minutes'
-                  .format(run, total_reward, epsilon, eta_hours, eta_minutes), end=''),
+                print('\rRun: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || ETA: {3:2d} hours {4:2d} minutes'
+                      .format(run, total_reward, epsilon, eta_hours, eta_minutes), end=''),
+            else:
+                print('\rRun: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || ETA: Estimating...'
+                      .format(run, total_reward, epsilon), end=''),
             # print("Run: ", run, "Reward: ", total_reward, "Epsilon: ", epsilon, "ETA: ",
             #       exec_time * (self.runs - run - 1))
             #         style.use("ggplot")
@@ -155,7 +163,7 @@ class TrainingAgent:
             #         pyplot.ylabel("Total Reward")
             #         pyplot.show()
 
-            #print(run, ":", total_reward, ":", epsilon)
+            # print(run, ":", total_reward, ":", epsilon)
         #         style.use("ggplot")
         #         pyplot.scatter(range(0, len(run_rewards)), run_rewards)
         #         pyplot.xlabel("Run")
@@ -166,13 +174,13 @@ class TrainingAgent:
             m = avg_q_val[i]
             avg_q_val[i] = sum(m) / len(m)
         # df=pd.DataFrame({da})
-        plt.plot(list(avg_q_val.keys()), list(avg_q_val.values()), label='Avg.Q',linewidth=0.5)
+        plt.plot(list(avg_q_val.keys()), list(avg_q_val.values()), label='Avg.Q', linewidth=0.5)
         plt.legend(loc='upper left')
         dirname = os.path.dirname(__file__)
         filename = os.path.join(dirname, '../output/q.png')
         plt.savefig(filename, dpi=300)
         plt.show()
-        #torch.save(self.q_network, "model")
+        # torch.save(self.q_network, "model")
         if validateRuns:
             print("Validation Runs:")
             for i in range(validateRuns):
@@ -259,13 +267,15 @@ class TrainingAgent:
         return max(self.min_epsilon,
                    ((self.min_epsilon - 1) / ln((1 - self.epsilon_min_percentage) * self.runs)) * ln(run + 1) + 1)
 
-    def gompertz_epsilon(self,run):
-        m=int((1-self.epsilon_min_percentage)*self.runs)
-        aux=-2*ln(((-2*ln(0.5))/(m-1)))/(m-1)
-        ep=1-(1-self.min_epsilon)*exp((-((m-1)/ 2))*exp(-aux*run))
-        return ep if run<=m else self.min_epsilon
+    def gompertz_epsilon(self, run):
+        m = int((1 - self.epsilon_min_percentage) * self.runs)
+        aux = -2 * ln(((-2 * ln(0.5)) / (m - 1))) / (m - 1)
+        ep = 1 - (1 - self.min_epsilon) * exp((-((m - 1) / 2)) * exp(-aux * run))
+        return ep if run <= m else self.min_epsilon
 
-
+    def constant_v2_epsilon(self, run):
+        m = int((1 - self.epsilon_min_percentage) * self.runs)
+        return 0.0 if run >= m else self.min_epsilon
 
     def cos_epsilon(self, run):
         # ((0.5*COS(H5*PI()/5))+0.5)*(1-(H5/350))
