@@ -27,12 +27,14 @@ class NN(nn.Module):
             nn.Sigmoid(),
             nn.Linear(128, 256),
             nn.Sigmoid(),
+            nn.Linear(256, 256),
+            nn.Sigmoid(),
             nn.Linear(256, model.action_dim)
         )
-        # self.l1 = nn.Linear(model.state_dim, 64)
-        # self.l2 = nn.Linear(64, 128)
-        # self.l3 = nn.Linear(128, 128)
-        # self.l4 = nn.Linear(128, model.action_dim)
+        self.l1 = nn.Linear(model.state_dim, 128)
+        self.l2 = nn.Linear(128, 256)
+        self.l3 = nn.Linear(256, 256)
+        self.l4 = nn.Linear(256, model.action_dim)
         # print(list(self.parameters()))
 
     def forward(self, x):
@@ -42,7 +44,7 @@ class NN(nn.Module):
         # x = torch.sigmoid(x)
         # x = self.l3(x)
         # x = torch.sigmoid(x)
-        #return self.l4(x)
+        # return self.l4(x)
         return self.fc(x)
 
 
@@ -83,8 +85,8 @@ class TrainingAgent:
             self.q_network.to("cuda")
         else:
             print("Training model on CPU.")
-        #self.loss = nn.SmoothL1Loss()
-        self.loss = nn.MSELoss()
+        self.loss = nn.SmoothL1Loss()
+        #self.loss = nn.MSELoss()
         self.optizer = optim.Adam(self.q_network.parameters(), amsgrad=True)
 
     def run(self, ):

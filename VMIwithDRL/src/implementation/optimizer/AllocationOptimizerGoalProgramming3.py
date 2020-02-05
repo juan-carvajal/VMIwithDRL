@@ -40,7 +40,7 @@ class AllocationOptimizer():
             cons7_plus = mdl.continuous_var_dict(self.H, 0, None, "Constraint7+")
             cons7_minus = mdl.continuous_var_dict(self.H, 0, None, "Constraint7-")
 
-            coeff = [1.0, 1, 1, 1]
+            coeff = [5.0, 1, 1, 1]
 
             mdl.minimize(mdl.sum(
                 coeff[0] * (I0[h] * self.CV + F[h] * self.CF) + coeff[1] * cons5_plus[h] + coeff[2] * cons7_plus[h] +
@@ -132,6 +132,7 @@ class AllocationOptimizer():
             #                 2] <= (
             #                                        mdl.sum([self.II[3][r] for (r) in self.R]) + mdl.sum([x[3, r] for (r) in self.R])) /
             #                                self.D[3])
+
             mdl.set_time_limit(5)
             mdl.solve()
 
