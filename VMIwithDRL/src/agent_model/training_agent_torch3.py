@@ -22,25 +22,28 @@ class NN(nn.Module):
     def __init__(self, model):
         super(NN, self).__init__()
         # self.norm=nn.LayerNorm(model.state_dim)
-        self.l1 = nn.Linear(model.state_dim, 64)
-        self.l2 = nn.Linear(64, 128)
-        self.l3 = nn.Linear(128, 128)
-        self.l4 = nn.Linear(128, model.action_dim)
+        self.fc = nn.Sequential(
+            nn.Linear(model.state_dim, 128),
+            nn.Sigmoid(),
+            nn.Linear(128, 256),
+            nn.Sigmoid(),
+            nn.Linear(256, model.action_dim)
+        )
+        # self.l1 = nn.Linear(model.state_dim, 64)
+        # self.l2 = nn.Linear(64, 128)
+        # self.l3 = nn.Linear(128, 128)
+        # self.l4 = nn.Linear(128, model.action_dim)
+        # print(list(self.parameters()))
 
     def forward(self, x):
-        # x=self.norm(x)
-        x = self.l1(x)
-        # x = F.relu(x)
-        x = torch.sigmoid(x)
-        # x = F.sigmoid(x)
-        x = self.l2(x)
-        # x = F.sigmoid(x)
-        x = torch.sigmoid(x)
-        x = self.l3(x)
-        # x=F.tanh(x)
-        # x = F.relu(x)
-        x = torch.sigmoid(x)
-        return self.l4(x)
+        # x = self.l1(x)
+        # x = torch.sigmoid(x)
+        # x = self.l2(x)
+        # x = torch.sigmoid(x)
+        # x = self.l3(x)
+        # x = torch.sigmoid(x)
+        #return self.l4(x)
+        return self.fc(x)
 
 
 class TrainingAgent:
@@ -80,11 +83,11 @@ class TrainingAgent:
             self.q_network.to("cuda")
         else:
             print("Training model on CPU.")
-        self.loss = nn.SmoothL1Loss()
-        #self.loss = nn.MSELoss()
+        #self.loss = nn.SmoothL1Loss()
+        self.loss = nn.MSELoss()
         self.optizer = optim.Adam(self.q_network.parameters(), amsgrad=True)
 
-    def run(self, validateRuns=None):
+    def run(self, ):
         avg_q_val = {}
         run_rewards = []
         time_sum = deque(maxlen=10)
@@ -99,7 +102,7 @@ class TrainingAgent:
             current_state = self.model.initial_state
             terminate = False
             run_step_count = 0
-            memory_full_at_start=len(self.memory.memory) >= self.memory.memory.maxlen
+            memory_full_at_start = len(self.memory.memory) >= self.memory.memory.maxlen
             while not terminate:
                 action = 0
                 if np.random.rand() <= epsilon:
@@ -144,31 +147,18 @@ class TrainingAgent:
             if memory_full_at_start:
                 exec_time = time.time() - start_time
                 time_sum.append(exec_time)
-                time_avg =mean(time_sum)
+                time_avg = mean(time_sum)
                 eta = time_avg * (self.runs - run - 1)
                 eta_hours = eta / 3600.0
-                eta_minutes = int((eta_hours - int(eta_hours)) * 60)+1
+                eta_minutes = int((eta_hours - int(eta_hours)) * 60) + 1
                 eta_hours = int(eta_hours)
 
-                print('\rRun: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || ETA: {3:2d} hours {4:2d} minutes'
-                      .format(run, total_reward, epsilon, eta_hours, eta_minutes), end=''),
+                print('Run: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || ETA: {3:2d} hours {4:2d} minutes'
+                      .format(run, total_reward, epsilon, eta_hours, eta_minutes))
             else:
-                print('\rRun: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || ETA: Estimating...'
-                      .format(run, total_reward, epsilon), end=''),
-            # print("Run: ", run, "Reward: ", total_reward, "Epsilon: ", epsilon, "ETA: ",
-            #       exec_time * (self.runs - run - 1))
-            #         style.use("ggplot")
-            #         pyplot.scatter(range(0, len(run_rewards)), run_rewards)
-            #         pyplot.xlabel("Run")
-            #         pyplot.ylabel("Total Reward")
-            #         pyplot.show()
+                print('Run: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || ETA: Estimating...'
+                      .format(run, total_reward, epsilon))
 
-            # print(run, ":", total_reward, ":", epsilon)
-        #         style.use("ggplot")
-        #         pyplot.scatter(range(0, len(run_rewards)), run_rewards)
-        #         pyplot.xlabel("Run")
-        #         pyplot.ylabel("Total Reward")
-        #         pyplot.show()
 
         for i in avg_q_val:
             m = avg_q_val[i]
@@ -181,24 +171,46 @@ class TrainingAgent:
         plt.savefig(filename, dpi=300)
         plt.show()
         # torch.save(self.q_network, "model")
-        if validateRuns:
-            print("Validation Runs:")
-            for i in range(validateRuns):
-                total_reward = 0
-                current_state = self.model.initial_state
-                terminate = False
-                run_step_count = 0
-                while not terminate:
-                    qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
-                    action = act.item()
-                    state, action, next_state, reward, terminal = self.model.model_logic(current_state, action,
-                                                                                         (run, run_step_count, True))
-                    total_reward += reward
-                    current_state = next_state
-                    if terminal or run_step_count >= self.step_per_run:
-                        terminate = True
-                    run_step_count += 1
-                print(i, ":", total_reward)
+
+        return run_rewards
+
+    def validate(self, runs, steps_per_run):
+        print("Validating policy:")
+        run_rewards = []
+        for run in range(runs):
+            total_reward = 0
+            self.model.reset_model()
+            current_state = self.model.initial_state
+            terminate = False
+            run_step_count = 0
+            while not terminate:
+                action = 0
+                q_vals = self.q_network.forward(self.tensor.FloatTensor(current_state)).cpu().detach().numpy()
+                val_actions = self.model.valid_actions(current_state)
+                max_idx = None
+                max_q = None
+                for idx, j in enumerate(q_vals):
+                    if idx in val_actions:
+                        if not max_q:
+                            max_q = j
+                            max_idx = idx
+                        else:
+                            if j > max_q:
+                                max_q = j
+                                max_idx = idx
+                action = max_idx
+                state, action, next_state, reward, terminal = self.model.model_logic(current_state, action,
+                                                                                     (run, run_step_count, False))
+                total_reward += reward
+                current_state = next_state
+                run_step_count += 1
+                if self.step_per_run is not None and run_step_count >= self.step_per_run:
+                    terminate = True
+            run_rewards.append(total_reward)
+
+            print('Run: {0:8d} || Reward: {1:12.2f}'
+                  .format(run, total_reward))
+        print("Average reward for ", runs, " runs: ", mean(run_rewards))
         return run_rewards
 
     def replay_train(self):

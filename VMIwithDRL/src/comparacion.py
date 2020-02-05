@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
         # print(tensorflow.test.is_gpu_available())
-        train_runs = 500
+        train_runs = 150
         results = {executor.submit(
             TrainingAgent(model=VMI(4, 100, 5, [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], 5, 100), runs=train_runs,
                           steps_per_run=365,
