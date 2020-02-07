@@ -3,7 +3,8 @@ Created on 17/11/2019
 @author: juan0
 '''
 from agent_model.training_agent_torch3 import TrainingAgent
-from implementation.VMImodel import VMI
+#from implementation.VMImodel import VMI
+from implementation.VMImodelVariable import VMI
 from matplotlib.offsetbox import (TextArea, DrawingArea, OffsetImage, AnnotationBbox)
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -41,6 +42,7 @@ def send_mail():
 if __name__ =='__main__':
     initial_state = [10, 10, 10, 10, 10, 1, 0, 0, 0, 0]
     # print(tensorflow.test.is_gpu_available())
+    #magic numbers: runs 150 , eppercentage:0.25
     train_runs=150
     model = VMI(4, 100, 5, initial_state, 5, 100)
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
@@ -110,11 +112,11 @@ if __name__ =='__main__':
     ax.plot(log_df.index, log_df.stockouts, label='Stockouts',linewidth=line_tc)
     ax.plot(log_df.index, log_df.expirees, label='Expirees', color='orange',linewidth=line_tc)
     ax.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', color='green',linewidth=line_tc)
-    ax.ylabel("Accumulated over episode")
-    ax.xlabel("Episode")
-    ax.title("Politic over time")
-    ax.grid(True)
-    ax.legend(loc='upper left')
+    plt.ylabel("Accumulated over episode")
+    plt.xlabel("Episode")
+    plt.title("Politic over time")
+    plt.grid(True)
+    plt.legend(loc='upper left')
     plt.savefig('output/politic.png', dpi=300)
     plt.show()
 
@@ -127,7 +129,7 @@ if __name__ =='__main__':
     fig, ax=plt.subplots()
     ax.plot(df.index, df.data, label='Rewards',linewidth=line_tc)
     ax.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange',linewidth=line_tc)
-    xy = (len(rewards) - 1, rolling_mean[len(rolling_mean) - 1])
+    xy = (len(rewards) - 1, rewards[-1])
     offsetbox = TextArea(xy[1], minimumdescent=False)
     ab = AnnotationBbox(offsetbox, xy,
                         xybox=(-10, 20),
@@ -135,11 +137,11 @@ if __name__ =='__main__':
                         boxcoords="offset points",
                         arrowprops=dict(arrowstyle="->"))
     ax.add_artist(ab)
-    ax.legend(loc='upper left')
-    ax.ylabel("Reward (Accumulated)")
-    ax.xlabel("Episode")
-    ax.title("Reward over time")
-    ax.grid(True)
+    plt.legend(loc='upper left')
+    plt.ylabel("Reward (Accumulated)")
+    plt.xlabel("Episode")
+    plt.title("Reward over time")
+    plt.grid(True)
     plt.savefig('output/reward.png', dpi=300)
     plt.show()
 

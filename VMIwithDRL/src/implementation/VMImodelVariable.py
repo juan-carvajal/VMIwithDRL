@@ -30,13 +30,13 @@ class VMI(Model):
     def model_logic(self, state, action, options=None):
         # demands = [5, 10, 15, 20]
         # print(state[:self.shelf_life])
-        demand_data = self.demands_and_donors.iloc[self.year_day]
+        #demand_data =self.get_demand(state[5])# self.demands_and_donors.iloc[self.year_day]
         self.year_day += 1
 
         # donors = demand_data["donors"]
         donors = 100
         # self.get_donors(state[5])
-        demands = [demand_data["d1"], demand_data["d2"], demand_data["d3"], demand_data["d4"]]
+        demands = self.get_demand(state[5])
         # self.get_demand(state[5])
         # donors = self.get_donors()
         # A = min(action,sum(state[:self.shelf_life]))
