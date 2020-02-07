@@ -4,6 +4,7 @@ Created on 17/11/2019
 '''
 from agent_model.training_agent_torch3 import TrainingAgent
 from implementation.VMImodel import VMI
+from matplotlib.offsetbox import (TextArea, DrawingArea, OffsetImage, AnnotationBbox)
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -38,12 +39,12 @@ def send_mail():
 
 
 if __name__ =='__main__':
-    initial_state = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+    initial_state = [10, 10, 10, 10, 10, 1, 0, 0, 0, 0]
     # print(tensorflow.test.is_gpu_available())
-    train_runs=250
+    train_runs=150
     model = VMI(4, 100, 5, initial_state, 5, 100)
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
-                          epsilon_function='linear', min_epsilon=0.01, epsilon_min_percentage=0.25)
+                          epsilon_function='consv2', min_epsilon=0.05, epsilon_min_percentage=0.25)
     rewards = agent.run()
     agent.validate(5,365)
     log = model.log
@@ -105,10 +106,15 @@ if __name__ =='__main__':
     # print(log_df)
     line_tc=0.7
     log_df.columns = ['index', 'stockouts', 'expirees', 'dc_expirees']
-    plt.plot(log_df.index, log_df.stockouts, label='Stockouts',linewidth=line_tc)
-    plt.plot(log_df.index, log_df.expirees, label='Expirees', color='orange',linewidth=line_tc)
-    plt.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', color='green',linewidth=line_tc)
-    plt.legend(loc='upper left')
+    fig, ax=plt.subplots()
+    ax.plot(log_df.index, log_df.stockouts, label='Stockouts',linewidth=line_tc)
+    ax.plot(log_df.index, log_df.expirees, label='Expirees', color='orange',linewidth=line_tc)
+    ax.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', color='green',linewidth=line_tc)
+    ax.ylabel("Accumulated over episode")
+    ax.xlabel("Episode")
+    ax.title("Politic over time")
+    ax.grid(True)
+    ax.legend(loc='upper left')
     plt.savefig('output/politic.png', dpi=300)
     plt.show()
 
@@ -118,19 +124,31 @@ if __name__ =='__main__':
     df.reset_index(level=0, inplace=True)
     df.columns = ['index', 'data']
     rolling_mean = df.data.rolling(window=50).mean()
-    plt.plot(df.index, df.data, label='Rewards',linewidth=line_tc)
-    plt.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange',linewidth=line_tc)
-    plt.legend(loc='upper left')
-    plt.grid(True)
+    fig, ax=plt.subplots()
+    ax.plot(df.index, df.data, label='Rewards',linewidth=line_tc)
+    ax.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange',linewidth=line_tc)
+    xy = (len(rewards) - 1, rolling_mean[len(rolling_mean) - 1])
+    offsetbox = TextArea(xy[1], minimumdescent=False)
+    ab = AnnotationBbox(offsetbox, xy,
+                        xybox=(-10, 20),
+                        xycoords='data',
+                        boxcoords="offset points",
+                        arrowprops=dict(arrowstyle="->"))
+    ax.add_artist(ab)
+    ax.legend(loc='upper left')
+    ax.ylabel("Reward (Accumulated)")
+    ax.xlabel("Episode")
+    ax.title("Reward over time")
+    ax.grid(True)
     plt.savefig('output/reward.png', dpi=300)
     plt.show()
 
 
-    opt_df = pd.DataFrame(opt_use, columns=['opt'])
-    opt_df.reset_index(level=0, inplace=True)
-    opt_df.columns = ['index', 'opt']
-    plt.plot(opt_df.index, opt_df.opt, label='Opt. Model Use',linewidth=line_tc)
-    plt.legend(loc='upper left')
-    plt.savefig('output/model_use.png', dpi=300)
-    plt.show()
+    # opt_df = pd.DataFrame(opt_use, columns=['opt'])
+    # opt_df.reset_index(level=0, inplace=True)
+    # opt_df.columns = ['index', 'opt']
+    # plt.plot(opt_df.index, opt_df.opt, label='Opt. Model Use',linewidth=line_tc)
+    # plt.legend(loc='upper left')
+    # plt.savefig('output/model_use.png', dpi=300)
+    # plt.show()
     #send_mail()

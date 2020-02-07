@@ -23,34 +23,36 @@ class NN(nn.Module):
         super(NN, self).__init__()
         # self.norm=nn.LayerNorm(model.state_dim)
         self.fc = nn.Sequential(
-            nn.Linear(model.state_dim, 128),
             nn.Sigmoid(),
-            nn.Linear(128, 256),
+            nn.Linear(model.state_dim, 256),
+            nn.Sigmoid(),
+            nn.Linear(256, 256),
             nn.Sigmoid(),
             nn.Linear(256, 256),
             nn.Sigmoid(),
             nn.Linear(256, model.action_dim)
         )
-        self.l1 = nn.Linear(model.state_dim, 128)
-        self.l2 = nn.Linear(128, 256)
+        self.l1 = nn.Linear(model.state_dim, 256)
+        self.l2 = nn.Linear(256, 256)
         self.l3 = nn.Linear(256, 256)
         self.l4 = nn.Linear(256, model.action_dim)
         # print(list(self.parameters()))
 
     def forward(self, x):
-        # x = self.l1(x)
-        # x = torch.sigmoid(x)
-        # x = self.l2(x)
-        # x = torch.sigmoid(x)
-        # x = self.l3(x)
-        # x = torch.sigmoid(x)
-        # return self.l4(x)
-        return self.fc(x)
+        x = torch.sigmoid(x)
+        x = self.l1(x)
+        x = torch.sigmoid(x)
+        x = self.l2(x)
+        x = torch.sigmoid(x)
+        x = self.l3(x)
+        x = torch.sigmoid(x)
+        return self.l4(x)
+        # return self.fc(x)
 
 
 class TrainingAgent:
 
-    def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.99,
+    def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.999,
                  memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear'):
 
         if epsilon_function == 'linear':
@@ -85,12 +87,11 @@ class TrainingAgent:
             self.q_network.to("cuda")
         else:
             print("Training model on CPU.")
-        self.loss = nn.SmoothL1Loss()
-        #self.loss = nn.MSELoss()
+        # self.loss = nn.SmoothL1Loss()
+        self.loss = nn.MSELoss()
         self.optizer = optim.Adam(self.q_network.parameters(), amsgrad=True)
 
     def run(self, ):
-        avg_q_val = {}
         run_rewards = []
         time_sum = deque(maxlen=10)
         for run in range(self.runs):
@@ -105,15 +106,17 @@ class TrainingAgent:
             terminate = False
             run_step_count = 0
             memory_full_at_start = len(self.memory.memory) >= self.memory.memory.maxlen
+            avg_q_val = 0
+            opt_act_count = 0
             while not terminate:
                 action = 0
                 if np.random.rand() <= epsilon:
                     #                     action = random.randrange(self.model.action_dim)
                     action = random.choice(self.model.valid_actions(current_state))
                 else:
-
+                    opt_act_count += 1
                     q_vals = self.q_network.forward(self.tensor.FloatTensor(current_state)).cpu().detach().numpy()
-                    val_actions = self.model.valid_actions(current_state)
+                    val_actions = np.array(self.model.valid_actions(current_state))
                     max_idx = None
                     max_q = None
                     for idx, j in enumerate(q_vals):
@@ -125,10 +128,7 @@ class TrainingAgent:
                                 if j > max_q:
                                     max_q = j
                                     max_idx = idx
-                    if (run in avg_q_val):
-                        avg_q_val[run].append(max_q)
-                    else:
-                        avg_q_val[run] = [max_q]
+                    avg_q_val += max_q
                     # print('Optimal action used { Qval:',max_q,' Action:',max_idx,' }')
 
                     #                     qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
@@ -155,23 +155,25 @@ class TrainingAgent:
                 eta_minutes = int((eta_hours - int(eta_hours)) * 60) + 1
                 eta_hours = int(eta_hours)
 
-                print('Run: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || ETA: {3:2d} hours {4:2d} minutes'
-                      .format(run, total_reward, epsilon, eta_hours, eta_minutes))
+                print(
+                    'Run: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || Avg.Q: {3:6.2f} || Exploitation: {4:3.2%} || ETA: {5:2d} hours {6:2d} minutes'
+                        .format(run, total_reward, epsilon, avg_q_val / run_step_count, opt_act_count / run_step_count,
+                                eta_hours, eta_minutes))
             else:
-                print('Run: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || ETA: Estimating...'
-                      .format(run, total_reward, epsilon))
+                print(
+                    'Run: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || Avg.Q: {3:6.2f} || Exploitation: {4:3.2%} || ETA: Estimating...'
+                    .format(run, total_reward, epsilon, avg_q_val / run_step_count, opt_act_count / run_step_count))
 
-
-        for i in avg_q_val:
-            m = avg_q_val[i]
-            avg_q_val[i] = sum(m) / len(m)
+        # for i in avg_q_val:
+        #     m = avg_q_val[i]
+        #     avg_q_val[i] = sum(m) / len(m)
         # df=pd.DataFrame({da})
-        plt.plot(list(avg_q_val.keys()), list(avg_q_val.values()), label='Avg.Q', linewidth=0.5)
-        plt.legend(loc='upper left')
-        dirname = os.path.dirname(__file__)
-        filename = os.path.join(dirname, '../output/q.png')
-        plt.savefig(filename, dpi=300)
-        plt.show()
+        # plt.plot(list(avg_q_val.keys()), list(avg_q_val.values()), label='Avg.Q', linewidth=0.5)
+        # plt.legend(loc='upper left')
+        # dirname = os.path.dirname(__file__)
+        # filename = os.path.join(dirname, '../output/q.png')
+        # plt.savefig(filename, dpi=300)
+        # plt.show()
         # torch.save(self.q_network, "model")
 
         return run_rewards
