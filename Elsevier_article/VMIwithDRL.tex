@@ -25,6 +25,7 @@
 
 %% Vancouver name/year
 \usepackage{numcompress}\bibliographystyle{model4-names}
+\usepackage{textcomp}
 \biboptions{authoryear}
 
 %% APA style
@@ -65,6 +66,18 @@
 \section{Literature Review}
 
 \section{Problem Definition}
+
+	\subsection{Context}
+		In general terms, the supply chain of human blood products its very complicated. Blood products, specially platelets, have very short expiration periods (around 5 days). Because of this, blood managing entities , like donor centers, face great issues estimating and planning production of these vital products. These issues can be of two types, the first one, its about expiration levels, if the donor center produces too much platelets (overestimating the demand), these limited and costly to produce items will go to waste, generating high costs for the entity, and providing no benefit to final users.The second kind of issue, is related to product stock outs (underestimating the demand).Its clear that stock outs are a much more important problem for the donor centers, because these can result in increased risk of death for those needing the platelets.The gravity of this problems is only increased when multiple hospitals or medical centers, with different demand distributions are dependent on the supplies from the donor center.The basic decision for a donor center consists of two parts, the first one, its about how much to produce. Human blood can be transformed and separated into its basic constituents (platelets among these)using a process called blood fractionation,usually performed centrifuging the blood.This process is carried out using specially designed blood bags,which can be single, double, triple or quadruple.Only the last two (the most expensive ones) can be used to extract platelets, so the donor center must know how many of these bags to use in the total donor pool.The second problem its about how much to deliver to each medical center, given its demand distribution and the current inventory of the donor center.
+		This problem is essentially a particular case of a Vendor Managed Inventory System, where a distribution center has to supply each of its customers based on individual needs and current capacity.
+		\subsection{Modeling}
+		To model such a system,a 4 medical center distribution has been considered, but the model should be easily scaled to an arbitrary number of medical centers.The medical centers will be referred from know on as hospitals.
+		Each hospital has an internal inventory, visible to the donor center, this inventory is represented by a 5-tuple:
+		$\{1{:}1, 1{:}0, 0{:}1, 2:1, 1{:}2, 2{:}2\}$
+		
+		
+		
+		
 
 \section{Methodology}
 

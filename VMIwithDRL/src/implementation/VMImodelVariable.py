@@ -1,13 +1,14 @@
 from implementation.hospital import Hospital
 import numpy as np
-#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+# from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
 from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
-
+from collections import deque
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 import timeit
 import math
 import pandas as pd
+from statistics import mean
 from scipy import stats
 
 
@@ -25,12 +26,13 @@ class VMI(Model):
         # [Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
         self.demands_and_donors = pd.read_csv(r'implementation/run_parameters.csv')
         # print(self.demands_and_donors)
+        self.demand_registry = [deque(maxlen=3) for _ in range(hospitals)]
         self.log = {}
 
     def model_logic(self, state, action, options=None):
         # demands = [5, 10, 15, 20]
         # print(state[:self.shelf_life])
-        #demand_data =self.get_demand(state[5])# self.demands_and_donors.iloc[self.year_day]
+        # demand_data =self.get_demand(state[5])# self.demands_and_donors.iloc[self.year_day]
         self.year_day += 1
 
         # donors = demand_data["donors"]
@@ -43,7 +45,7 @@ class VMI(Model):
         A = action // 11
         prep_donors = int((((action % 11) * 10) / 100.0) * donors)
 
-        #print(action, A, prep_donors ,sum(demands))
+        # print(action, A, prep_donors ,sum(demands))
 
         A_i = [0] * self.shelf_life
         for i, val in enumerate(A_i):
@@ -56,14 +58,17 @@ class VMI(Model):
         for i in self.hospitals:
             # print(i.inventory)
             II.append(i.inventory)
-
-        opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life,
+        demand_forecast = [round(mean(x)) for x in self.demand_registry] if len(
+            self.demand_registry[0]) >= 3 else self.get_average_demand(state[5])
+        #print(demand_forecast)
+        opt = AllocationOptimizer(II, A_i, demand_forecast, self.exp_cost, self.stockout_cost, self.shelf_life,
                                   len(self.hospitals))
-
+        for idx, i in enumerate(self.demand_registry):
+            i.append(demands[idx])
         # opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life, len(self.hospitals))
 
         rep, used_model = opt.allocate()
-        #print("Day ",self.year_day, rep)
+        # print("Day ",self.year_day, rep)
 
         # print(rep)
         reward = 0
@@ -107,13 +112,15 @@ class VMI(Model):
         # v_act = [*range(a_max)]
 
         v_act2 = [x for x in range(1100) if (x // 11) <= t_inv]
-        #print(t_inv,v_act2)
+        # print(t_inv,v_act2)
         return v_act2
 
     def reset_model(self):
         self.year_day = 0
         self.hospitals = [Hospital([0] * self.shelf_life, None, self.exp_cost * 1.5, self.stockout_cost) for _ in
                           range(len(self.hospitals))]
+        for i in self.demand_registry:
+            i.clear()
 
     def update_inventory_bloodbank(self, state, donors, delivered, hospital_new_inv):
         state_aux = [0] * (self.shelf_life + 1)
@@ -173,6 +180,53 @@ class VMI(Model):
         don = math.floor(don)
         # don=100
         return don
+
+    def get_average_demand(self, day):
+        if day == 1:
+            d1 = 2.6 * 6.1 * 0.5
+            d2 = 2.6 * 6.1 * 0.3
+            d3 = 2.6 * 6.1 * 0.2
+            d4 = 2.6 * 6.1 * 0.1
+
+        elif day == 2:
+            d1 = 4.9 * 9.2 * 0.5
+            d2 = 4.9 * 9.2 * 0.3
+            d3 = 4.9 * 9.2 * 0.2
+            d4 = 4.9 * 9.2 * 0.1
+
+        elif day == 3:
+            d1 = 6.9 * 8.2 * 0.5
+            d2 = 6.9 * 8.2 * 0.3
+            d3 = 6.9 * 8.2 * 0.2
+            d4 = 6.9 * 8.2 * 0.1
+
+        elif day == 4:
+            d1 = 4.7 * 9.3 * 0.5
+            d2 = 4.7 * 9.3 * 0.3
+            d3 = 4.7 * 9.3 * 0.2
+            d4 = 4.7 * 9.3 * 0.1
+
+        elif day == 5:
+            d1 = 5.7 * 8.0 * 0.5
+            d2 = 5.7 * 8.0 * 0.3
+            d3 = 5.7 * 8.0 * 0.2
+            d4 = 5.7 * 8.0 * 0.1
+
+        elif day == 6:
+            d1 = 4.8 * 8.7 * 0.5
+            d2 = 4.8 * 8.7 * 0.3
+            d3 = 4.8 * 8.7 * 0.2
+            d4 = 4.8 * 8.7 * 0.1
+        else:
+            d1 = 1.7 * 3.2 * 0.5
+            d2 = 1.7 * 3.2 * 0.3
+            d3 = 1.7 * 3.2 * 0.2
+            d4 = 1.7 * 3.2 * 0.1
+        d1 = self.checkDemand(d1)
+        d2 = self.checkDemand(d2)
+        d3 = self.checkDemand(d3)
+        d4 = self.checkDemand(d4)
+        return [d1, d2, d3, d4]
 
     def get_demand(self, day):
         # VENTA DIRECTA UNION TEMPORAL
