@@ -2,8 +2,9 @@
 Created on 17/11/2019
 @author: juan0
 '''
-from agent_model.training_agent_torch3 import TrainingAgent
-#from implementation.VMImodel import VMI
+#from agent_model.training_agent_torch3 import TrainingAgent
+from agent_model.DDQL_agent import TrainingAgent
+# from implementation.VMImodel import VMI
 from implementation.VMImodelVariable import VMI
 from matplotlib.offsetbox import (TextArea, DrawingArea, OffsetImage, AnnotationBbox)
 import pandas as pd
@@ -14,17 +15,16 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
 
-
 def send_mail():
-    with open('recipients.txt','r') as file:
-        recipients=file.read().splitlines()
+    with open('recipients.txt', 'r') as file:
+        recipients = file.read().splitlines()
     for recipient in recipients:
 
         msg = MIMEMultipart()
         msg['Subject'] = 'Training Report'
         msg['From'] = 'juancarvajal3@pepisandbox.com'
         msg['To'] = recipient
-        images=['output/reward.png','output/politic.png','output/model_use.png','output/q.png']
+        images = ['output/reward.png', 'output/politic.png', 'output/model_use.png', 'output/q.png']
         for image in images:
             img_data = open(image, 'rb').read()
             image_mime = MIMEImage(img_data, name=os.path.basename(image))
@@ -39,16 +39,16 @@ def send_mail():
         s.quit()
 
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     initial_state = [10, 10, 10, 10, 10, 1, 0, 0, 0, 0]
     # print(tensorflow.test.is_gpu_available())
-    #magic numbers: runs 150 , eppercentage:0.25 , min_ep:0.05
-    train_runs=150
+    # magic numbers: runs 150 , eppercentage:0.25 , min_ep:0.05 , batch:32 , memory:1825
+    train_runs = 150
     model = VMI(4, 100, 5, initial_state, 5, 100)
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
-                          epsilon_function='consv2', min_epsilon=0.05, epsilon_min_percentage=0.15)
+                          epsilon_function='constant', min_epsilon=0.05,epsilon_min_percentage=0.15)
     rewards = agent.run()
-    agent.validate(5,365)
+    agent.validate(5, 365)
     log = model.log
     expirees = []
     stockouts = []
@@ -76,9 +76,9 @@ if __name__ =='__main__':
                     for
                     sublist
                     in log[
-                        year][
-                        day][
-                        "II"]
+                    year][
+                    day][
+                    "II"]
                     for
                     item in
                     sublist]
@@ -106,12 +106,12 @@ if __name__ =='__main__':
     log_df = pd.DataFrame(log_data)
     log_df.reset_index(level=0, inplace=True)
     # print(log_df)
-    line_tc=0.7
+    line_tc = 0.7
     log_df.columns = ['index', 'stockouts', 'expirees', 'dc_expirees']
-    fig, ax=plt.subplots()
-    ax.plot(log_df.index, log_df.stockouts, label='Stockouts',linewidth=line_tc)
-    ax.plot(log_df.index, log_df.expirees, label='Expirees', color='orange',linewidth=line_tc)
-    ax.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', color='green',linewidth=line_tc)
+    fig, ax = plt.subplots()
+    ax.plot(log_df.index, log_df.stockouts, label='Stockouts', linewidth=line_tc)
+    ax.plot(log_df.index, log_df.expirees, label='Expirees', color='orange', linewidth=line_tc)
+    ax.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', color='green', linewidth=line_tc)
     plt.ylabel("Accumulated over episode")
     plt.xlabel("Episode")
     plt.title("Politic over time")
@@ -120,15 +120,13 @@ if __name__ =='__main__':
     plt.savefig('output/politic.png', dpi=300)
     plt.show()
 
-
-
     df = pd.DataFrame(rewards, columns=['rewards'])
     df.reset_index(level=0, inplace=True)
     df.columns = ['index', 'data']
     rolling_mean = df.data.rolling(window=50).mean()
-    fig, ax=plt.subplots()
-    ax.plot(df.index, df.data, label='Rewards',linewidth=line_tc)
-    ax.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange',linewidth=line_tc)
+    fig, ax = plt.subplots()
+    ax.plot(df.index, df.data, label='Rewards', linewidth=line_tc)
+    ax.plot(df.index, rolling_mean, label='SMA(n=50)', color='orange', linewidth=line_tc)
     xy = (len(rewards) - 1, rewards[-1])
     offsetbox = TextArea(xy[1], minimumdescent=False)
     ab = AnnotationBbox(offsetbox, xy,
@@ -145,7 +143,6 @@ if __name__ =='__main__':
     plt.savefig('output/reward.png', dpi=300)
     plt.show()
 
-
     # opt_df = pd.DataFrame(opt_use, columns=['opt'])
     # opt_df.reset_index(level=0, inplace=True)
     # opt_df.columns = ['index', 'opt']
@@ -153,4 +150,4 @@ if __name__ =='__main__':
     # plt.legend(loc='upper left')
     # plt.savefig('output/model_use.png', dpi=300)
     # plt.show()
-    #send_mail()
+    send_mail()

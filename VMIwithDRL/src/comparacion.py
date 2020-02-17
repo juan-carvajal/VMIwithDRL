@@ -1,5 +1,5 @@
-from agent_model.training_agent_torch3 import TrainingAgent
-from implementation.VMImodel import VMI
+from agent_model.DDQL_agent import TrainingAgent
+from implementation.VMImodelVariable import VMI
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -15,7 +15,7 @@ if __name__ == '__main__':
             TrainingAgent(model=VMI(4, 100, 5, [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], 5, 100), runs=train_runs,
                           steps_per_run=365,
                           batch_size=32, memory=1825, use_gpu=True,
-                          epsilon_function=f, min_epsilon=0, epsilon_min_percentage=0.1).run): f for f in functions}
+                          epsilon_function=f, min_epsilon=0.05, epsilon_min_percentage=0.15).run): f for f in functions}
         rewards = {results[f]: f.result() for f in concurrent.futures.as_completed(results)}
 
     df = pd.DataFrame(rewards)

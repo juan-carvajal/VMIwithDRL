@@ -136,25 +136,37 @@ class AllocationOptimizer():
 
                 mdl.set_time_limit(20)
                 mdl.solve()
-                if mdl.solve_details.mip_relative_gap>0.02:
-                    print("Resolving again, Initial Solve Gap:",mdl.solve_details.mip_relative_gap)
+                a = [[0 for r in range(len(self.R))] for h in range(len(self.H))]
+                for r in range(5):
+                    for h in range(4):
+                        a[h][r] = x[h, r].solution_value
+                best_solve_gap=mdl.solve_details.mip_relative_gap
+                if best_solve_gap>0.02:
+                    mdl.set_time_limit(40)
+                    print("Resolving again, Initial Solve Gap:",best_solve_gap)
                     mdl.solve()
-                    print("Final Solve Gap:", mdl.solve_details.mip_relative_gap)
+                    new_solve_gap=mdl.solve_details.mip_relative_gap
+                    if new_solve_gap<best_solve_gap:
+                        best_solve_gap=new_solve_gap
+                        for r in range(5):
+                            for h in range(4):
+                                a[h][r] = x[h, r].solution_value
+                    print("Final Solve Gap:", best_solve_gap)
 
             # The status of the solution is printed to the screen
 
             # print("Status:", mdl.get_solve_status())
             # print(mdl.solve_details)
             # print(mdl._get_solution())
-                a = [[0 for r in range(len(self.R))] for h in range(len(self.H))]
-                # mdl.print_solution()
-                # print(list(x.values()))
-                # The optimised objective function value is printed to the scree
-                # print(type(x[0][0]))
-                # print (a)
-                for r in range(5):
-                    for h in range(4):
-                        a[h][r] = x[h, r].solution_value
+            #     a = [[0 for r in range(len(self.R))] for h in range(len(self.H))]
+            #     # mdl.print_solution()
+            #     # print(list(x.values()))
+            #     # The optimised objective function value is printed to the scree
+            #     # print(type(x[0][0]))
+            #     # print (a)
+            #     for r in range(5):
+            #         for h in range(4):
+            #             a[h][r] = x[h, r].solution_value
                         # print("x" + str(h) + str(r), x[h, r].solution_value)
                 #             print(mdl.get_solve_status())
                 #             print(a,'\n')

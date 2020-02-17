@@ -1,14 +1,16 @@
 from implementation.hospital import Hospital
 import numpy as np
-# from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
 from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
+from sklearn.metrics import mean_squared_error
 import timeit
 import math
 import pandas as pd
 from statistics import mean
+import json
 from scipy import stats
 
 
@@ -28,6 +30,7 @@ class VMI(Model):
         # print(self.demands_and_donors)
         self.demand_registry = [deque(maxlen=3) for _ in range(hospitals)]
         self.log = {}
+        self.solve_memory = {}
 
     def model_logic(self, state, action, options=None):
         # demands = [5, 10, 15, 20]
@@ -56,18 +59,29 @@ class VMI(Model):
 
         II = []
         for i in self.hospitals:
-            # print(i.inventory)
             II.append(i.inventory)
         demand_forecast = [round(mean(x)) for x in self.demand_registry] if len(
             self.demand_registry[0]) >= 3 else self.get_average_demand(state[5])
-        #print(demand_forecast)
+        # demand_forecast=self.get_average_demand(state[5])
+        # self.forecast_acc_mse+=mean_squared_error(demands,demand_forecast)
+        # print(self.forecast_acc_mse)
+
+        # json_model = json.dumps({"II": II, "A": A_i, "demands": demand_forecast})
+        # if json_model in self.solve_memory:
+        #     rep, used_model = self.solve_memory[json_model], False
+        # else:
+        #
+        #     opt = AllocationOptimizer(II, A_i, demand_forecast, self.exp_cost, self.stockout_cost, self.shelf_life,
+        #                               len(self.hospitals))
+        #     rep, used_model = opt.allocate()
+        #     self.solve_memory[json_model]=rep
         opt = AllocationOptimizer(II, A_i, demand_forecast, self.exp_cost, self.stockout_cost, self.shelf_life,
                                   len(self.hospitals))
+        rep, used_model = opt.allocate()
         for idx, i in enumerate(self.demand_registry):
             i.append(demands[idx])
         # opt = AllocationOptimizer(II, A_i, demands, self.exp_cost, self.stockout_cost, self.shelf_life, len(self.hospitals))
 
-        rep, used_model = opt.allocate()
         # print("Day ",self.year_day, rep)
 
         # print(rep)
@@ -116,6 +130,8 @@ class VMI(Model):
         return v_act2
 
     def reset_model(self):
+        #print("Solutions buffer:",len(self.solve_memory))
+        self.forecast_acc_mse = 0
         self.year_day = 0
         self.hospitals = [Hospital([0] * self.shelf_life, None, self.exp_cost * 1.5, self.stockout_cost) for _ in
                           range(len(self.hospitals))]
@@ -154,6 +170,17 @@ class VMI(Model):
         #
         #         state_aux[self.shelf_life+1:]=hospital_new_inv
         return state_aux, dc_exp
+
+    def arima_forecast(self):
+        import pmdarima as pm
+        forecast = [round(pm.auto_arima(self.demand_registry[i],
+                                        start_p=1,
+                                        start_q=1,
+                                        test="adf",
+                                        seasonal=True,
+                                        trace=False).predict(n_periods=1, return_conf_int=False)[0]) for i in
+                    range(len(self.hospitals))]
+        return forecast
 
     def get_donors(self, day):
 
