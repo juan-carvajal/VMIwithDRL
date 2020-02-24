@@ -91,7 +91,7 @@ class TrainingAgent:
         self.loss = nn.MSELoss()
         self.optizer = optim.Adam(self.q_network.parameters(), amsgrad=True)
 
-    def run(self, ):
+    def run(self):
         run_rewards = []
         time_sum = deque(maxlen=10)
         for run in range(self.runs):
@@ -134,8 +134,7 @@ class TrainingAgent:
                     #                     qval, act = torch.max(self.q_network.forward(self.tensor.FloatTensor(current_state)), 0)
                     #                     action = act.item()
                     action = max_idx
-                state, action, next_state, reward, terminal = self.model.model_logic(current_state, action,
-                                                                                     (run, run_step_count, False))
+                state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
                 total_reward += reward
                 self.memory.append((state, action, next_state, reward, terminal))
                 if len(self.memory.memory) >= self.memory.memory.maxlen:
@@ -178,7 +177,7 @@ class TrainingAgent:
 
         return run_rewards
 
-    def validate(self, runs, steps_per_run):
+    def validate(self, runs):
         print("Validating policy:")
         run_rewards = []
         for run in range(runs):

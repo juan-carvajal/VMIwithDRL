@@ -24,7 +24,7 @@ def send_mail():
         msg['Subject'] = 'Training Report'
         msg['From'] = 'juancarvajal3@pepisandbox.com'
         msg['To'] = recipient
-        images = ['output/reward.png', 'output/politic.png', 'output/model_use.png', 'output/q.png']
+        images = ['output/train_reward.png', 'output/train_politic.png', 'output/model_use.png', 'output/q.png']
         for image in images:
             img_data = open(image, 'rb').read()
             image_mime = MIMEImage(img_data, name=os.path.basename(image))
@@ -43,13 +43,18 @@ if __name__ == '__main__':
     initial_state = [10, 10, 10, 10, 10, 1, 0, 0, 0, 0]
     # print(tensorflow.test.is_gpu_available())
     # magic numbers: runs 150 , eppercentage:0.25 , min_ep:0.05 , batch:32 , memory:1825
-    train_runs = 150
-    model = VMI(4, 100, 5, initial_state, 5, 100)
+
+    #Estrategia buena para realizar el entrenmiento cada año.
+    # agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=365, memory=1825, use_gpu=True,
+    #                       epsilon_function='linear', min_epsilon=0.01, epsilon_min_percentage=0.15)
+
+    train_runs = 1000
+    model = VMI(4, 100, 5,train_runs, initial_state, 5, 100)
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
-                          epsilon_function='constant', min_epsilon=0.05,epsilon_min_percentage=0.15)
+                          epsilon_function='linear', min_epsilon=0.01,epsilon_min_percentage=0.10)
     rewards = agent.run()
-    agent.validate(5, 365)
-    log = model.log
+    agent.validate(50, 365)
+    log = model.log["train"]
     expirees = []
     stockouts = []
     dc_expirees = []
@@ -69,7 +74,7 @@ if __name__ == '__main__':
                 opt += 1
 
             all = log[year][day]["allocation"]
-            a = [year, day, log[year][day]["action"]] + log[year][day]["inventory"] + [log[year][day]["reward"]] + \
+            a = [year, day, log[year][day]["shipment_size"]] + log[year][day]["inventory"] + [log[year][day]["reward"]] + \
                 log[year][day]["demands"] + [log[year][day]["donors"]] + log[year][day]["stockouts"] + log[year][day][
                     "expirees"] + [log[year][day]["DC_expirees"]] + [item for sublist in all for item in sublist] + [
                     item
@@ -81,9 +86,8 @@ if __name__ == '__main__':
                     "II"]
                     for
                     item in
-                    sublist]
+                    sublist]+[log[year][day]["production_level"]]
             dataExport.append(a)
-
         opt_use.append(opt / len(log[year]))
         stockouts.append(stk)
         expirees.append(exp)
@@ -91,14 +95,14 @@ if __name__ == '__main__':
 
     log_export = pd.DataFrame(dataExport)
     log_export.reset_index(level=0, inplace=True)
-    log_export.columns = ['index', 'year', 'day', 'action', 'I0', 'I1', 'I2', 'I3', 'I4', 'reward', 'D1', 'D2', 'D3',
+    log_export.columns = ['index', 'year', 'day', 'shipment_size', 'I0', 'I1', 'I2', 'I3', 'I4', 'reward', 'D1', 'D2', 'D3',
                           'D4',
                           'donors', 'S1', 'S2', 'S3', 'S4', 'E1', 'E2', 'E3', 'E4', 'DC_E', 'H1_A0', 'H1_A1', 'H1_A2',
                           'H1_A3', 'H1_A4', 'H2_A0', 'H2_A1', 'H2_A2', 'H2_A3', 'H2_A4', 'H3_A0', 'H3_A1', 'H3_A2',
                           'H3_A3',
                           'H3_A4', 'H4_A0', 'H4_A1', 'H4_A2', 'H4_A3', 'H4_A4', 'H1_II0', 'H1_II1', 'H1_II2', 'H1_II3',
                           'H1_II4', 'H2_II0', 'H2_II1', 'H2_II2', 'H2_II3', 'H2_II4', 'H3_II0', 'H3_II1', 'H3_II2',
-                          'H3_II3', 'H3_II4', 'H4_II0', 'H4_II1', 'H4_II2', 'H4_II3', 'H4_II4']
+                          'H3_II3', 'H3_II4', 'H4_II0', 'H4_II1', 'H4_II2', 'H4_II3', 'H4_II4','production_level']
     log_export.to_csv('output/data.csv')
 
     log_data = {"stockouts": stockouts, "expirees": expirees, "dc_expirees": dc_expirees}
@@ -110,14 +114,14 @@ if __name__ == '__main__':
     log_df.columns = ['index', 'stockouts', 'expirees', 'dc_expirees']
     fig, ax = plt.subplots()
     ax.plot(log_df.index, log_df.stockouts, label='Stockouts', linewidth=line_tc)
-    ax.plot(log_df.index, log_df.expirees, label='Expirees', color='orange', linewidth=line_tc)
-    ax.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', color='green', linewidth=line_tc)
+    ax.plot(log_df.index, log_df.expirees, label='Expirees', linewidth=line_tc)
+    ax.plot(log_df.index, log_df.dc_expirees, label='DC Expirees', linewidth=line_tc)
     plt.ylabel("Accumulated over episode")
     plt.xlabel("Episode")
     plt.title("Politic over time")
     plt.grid(True)
     plt.legend(loc='upper left')
-    plt.savefig('output/politic.png', dpi=300)
+    plt.savefig('output/train_politic.png', dpi=300)
     plt.show()
 
     df = pd.DataFrame(rewards, columns=['rewards'])
@@ -140,7 +144,7 @@ if __name__ == '__main__':
     plt.xlabel("Episode")
     plt.title("Reward over time")
     plt.grid(True)
-    plt.savefig('output/reward.png', dpi=300)
+    plt.savefig('output/train_reward.png', dpi=300)
     plt.show()
 
     # opt_df = pd.DataFrame(opt_use, columns=['opt'])

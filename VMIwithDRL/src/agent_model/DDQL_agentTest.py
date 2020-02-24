@@ -53,7 +53,7 @@ class NN(nn.Module):
 class TrainingAgent:
 
     def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.999,
-                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear'):
+                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear', train_period=1):
 
         if epsilon_function == 'linear':
             self.epsilon_function = self.linear_epsilon
@@ -71,6 +71,7 @@ class TrainingAgent:
             raise Exception(
                 'The epsilon_function parameter must be one of these types: (linear, log, constant, cos , gompertz, consv2).')
         self.model = model
+        self.train_period = train_period
         self.memory = Memory(memory)
         self.epsilon = 1
         self.batch_size = batch_size
@@ -82,8 +83,8 @@ class TrainingAgent:
         self.use_gpu = use_gpu and torch.cuda.is_available()
         self.tensor = torch.cuda if self.use_gpu else torch
         self.q_network = NN(model)
-        self.target_network=NN(model)
-        self.tau=0.01
+        self.target_network = NN(model)
+        self.tau = 0.01
         if self.use_gpu:
             print("Training model on GPU.")
             self.q_network.to("cuda")
@@ -141,8 +142,6 @@ class TrainingAgent:
                 state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
                 total_reward += reward
                 self.memory.append((state, action, next_state, reward, terminal))
-                if len(self.memory.memory) >= self.memory.memory.maxlen:
-                    self.replay_train()
                 current_state = next_state
                 run_step_count += 1
                 if self.step_per_run is not None and run_step_count >= self.step_per_run:
@@ -165,8 +164,10 @@ class TrainingAgent:
             else:
                 print(
                     'Run: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || Avg.Q: {3:6.2f} || Exploitation: {4:3.2%} || ETA: Estimating...'
-                    .format(run, total_reward, epsilon, avg_q_val / run_step_count, opt_act_count / run_step_count))
+                        .format(run, total_reward, epsilon, avg_q_val / run_step_count, opt_act_count / run_step_count))
             self.model.reset_model()
+            if len(self.memory.memory) >= self.memory.memory.maxlen and run % self.train_period == 0:
+                self.replay_train()
 
         # for i in avg_q_val:
         #     m = avg_q_val[i]

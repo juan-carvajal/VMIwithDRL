@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -17,10 +17,12 @@ from scipy import stats
 class VMI(Model):
     # LOS ESTADOS DE ESTA CLASE SON LOS NIVELES DE INVENTARIOS QUE TIENE PARA CADA UNA DE LAS CADUCIDADES
     # LAS ACCIONES POSIBLES VAN DESDE 0 HASTA MAX_A
-    def __init__(self, hospitals, max_A, shelf_life, initial_state=None, exp_cost=None, stockout_cost=None):
+    def __init__(self, hospitals, max_A, shelf_life,train_runs, initial_state=None, exp_cost=None, stockout_cost=None):
         super(VMI, self).__init__(initial_state, max_A * 11, len(initial_state))
         self.year_day = 0
+        self.year = 0
         self.day = 1
+        self.train_runs=train_runs
         self.shelf_life = shelf_life
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
@@ -29,14 +31,13 @@ class VMI(Model):
         self.demands_and_donors = pd.read_csv(r'implementation/run_parameters.csv')
         # print(self.demands_and_donors)
         self.demand_registry = [deque(maxlen=3) for _ in range(hospitals)]
-        self.log = {}
+        self.log = {"train":{},"validate":{}}
         self.solve_memory = {}
 
-    def model_logic(self, state, action, options=None):
+    def model_logic(self, state, action):
         # demands = [5, 10, 15, 20]
         # print(state[:self.shelf_life])
         # demand_data =self.get_demand(state[5])# self.demands_and_donors.iloc[self.year_day]
-        self.year_day += 1
 
         # donors = demand_data["donors"]
         donors = 100
@@ -105,17 +106,27 @@ class VMI(Model):
         reward += dc_exp * self.exp_cost
         # reward=0
         # print(reward)
-
-        if options and options[2] == False:
-            year = options[0]
-            data = {"rewards": rewards, "stockouts": stockouts, "expirees": expireds, "allocation": rep, "action": A,
+        year = self.year
+        if year<self.train_runs:
+            data = {"rewards": rewards, "stockouts": stockouts, "expirees": expireds, "allocation": rep, "shipment_size": A,"production_level":(((action % 11) * 10) / 100.0),
                     "inventory": state[:self.shelf_life], "donors": donors, "reward": reward, "demands": demands,
                     'DC_expirees': state[0], 'II': II, 'Used_LP_Model': used_model}
-            if year in self.log:
-                self.log[year].append(data)
+            if year in self.log["train"]:
+                self.log["train"][year].append(data)
             else:
-                self.log[year] = []
-                self.log[year].append(data)
+                self.log["train"][year] = []
+                self.log["train"][year].append(data)
+        else:
+            data = {"rewards": rewards, "stockouts": stockouts, "expirees": expireds, "allocation": rep, "shipment_size": A,"production_level":(((action % 11) * 10) / 100.0),
+                    "inventory": state[:self.shelf_life], "donors": donors, "reward": reward, "demands": demands,
+                    'DC_expirees': state[0], 'II': II, 'Used_LP_Model': used_model}
+            if year in self.log["validate"]:
+                self.log["validate"][year].append(data)
+            else:
+                self.log["validate"][year] = []
+                self.log["validate"][year].append(data)
+
+        self.year_day += 1
         # print(reward)
         reward *= -1
         return state, action, next_state, reward, False
@@ -125,14 +136,15 @@ class VMI(Model):
         # a_max = min(t_inv, self.action_dim)
         # v_act = [*range(a_max)]
 
-        v_act2 = [x for x in range(1100) if (x // 11) <= t_inv]
+        v_act2 = {x for x in range(1100) if (x // 11) <= t_inv}
         # print(t_inv,v_act2)
         return v_act2
 
     def reset_model(self):
-        #print("Solutions buffer:",len(self.solve_memory))
+        # print("Solutions buffer:",len(self.solve_memory))
         self.forecast_acc_mse = 0
         self.year_day = 0
+        self.year+=1
         self.hospitals = [Hospital([0] * self.shelf_life, None, self.exp_cost * 1.5, self.stockout_cost) for _ in
                           range(len(self.hospitals))]
         for i in self.demand_registry:

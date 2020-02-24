@@ -26,8 +26,14 @@
 %% Vancouver name/year
 \usepackage{numcompress}\bibliographystyle{model4-names}
 \usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
 \biboptions{authoryear}
 \usepackage{tikz}
+\usetikzlibrary{arrows.meta,chains,%
+	decorations.pathreplacing}
 
 
 %% APA style
@@ -121,22 +127,100 @@
 
 \section{Methodology}
 
-		The deep reinforcement learning model model was developed using the Tensorflow, the integer programming model was solved using pulp the integration was carried out using the Python
+	\subsection{Vendor Managed Inventory}
+
+	Opposing to the traditional vendor-client systems, Vendor managed inventory systems design the supply chain architecture from the supplier to the customers.Clients must provide relevant information like inventories and sales, and is the responsibility of the vendor to define the size and date of the shipments. These systems often come with a tight information system coupling between clients and vendors, so the information is always readily available. The VMI model is going to be leveraged in order to reduce the general levels of stock-outs and expired product in the blood supply chain, more specifically the platelets supply chain.
 		
-		\cite{Feynman1963118}
-		\cite{Dirac1953888}
-		
-	\subsection{Two Stage Deep Reinforcement Learning Framework}
+	\subsection{Deep Reinforcement Learning Framework}
 	
-	In our framework, deep reinforcement learning is used to represent the actual of the blood centre, incorporating variability in donation and demand. Features such as perishability. Integer programming is used to support decisions concerning the allocation of blood platelets to the hospitals.
+	To leverage the VMI model, the blood distribution centers (the vendors for this specific case), need a way to define optimal or near optimal policies to make shipments to the customers(hospitals and medical facilities in need of platelets).Considering that in real-world systems, demand is stochastic and often seasonal, most classic inventory policies can't be used. Also, for this specific case, the vendor does not have unlimited production capacity, because raw materials for blood products come from a variable pool of donors. Because of this,the best approach to find the shipping policies are heuristics. The chosen method to generate such policies is Deep Reinforcement Learning.This framework is based on a reward system across various simulations of the actual system, that must be represented in a way the deep learning framework can understand.
+	
+	\subsubsection{Data Representation}
+	Typical deep reinforcement systems are modeled as a set of states and a set of actions. A state correspond to a tuple of numbers that represent certain characteristics of the system at a given time. Similarly, the action space of a system can be represented as a tuple, where each element maps directly to a well defined action. Both state and action spaces can be discrete or continuous.For this specific case, both are discrete.
+	The case study system state is represented by a 10-tuple, each position of the tuple represents a characteristic of the system in the following form:
+	
 
+	\begin{center}
+	\begin{tikzpicture}[
+	% -{Stealth[length = 2.5pt]},
+	start chain = going right,
+	node distance = 0pt,
+	MyStyle/.style={draw, minimum width=2em, minimum height=2em, 
+		outer sep=0pt, on chain},
+	]
+	\node [MyStyle] (1) {$1$};
+	\node [MyStyle] (2) {$2$};
+	\node [MyStyle] (3) {$3$};
+	\node [MyStyle] (4) {$4$};
+	\node [MyStyle] (5) {$5$};
+	\node [MyStyle] (6) {$6$};
+	\node [MyStyle] (7) {$7$};
+	\node [MyStyle] (8) {$8$};
+	\node [MyStyle] (9) {$9$};
+	\node [MyStyle] (10) {$10$};
 
-\subsection{Deep Reinforcement Learning}
+	\draw[decorate,decoration={brace, amplitude=10pt, raise=5pt, mirror}]
+	(1.south west) to node[black,midway,below= 15pt] {
+		\shortstack{Total number of units\\for each shelf life }} (5.south east);%
+	
+		\draw[decorate,decoration={brace, amplitude=10pt, raise=25pt, }]
+	(6.south west) to node[black,midway,above=35pt] {Week day} (6.south east);%
+	
+			\draw[decorate,decoration={brace, amplitude=10pt, raise=5pt, mirror}]
+	(7.south west) to node[black,midway,below= 15pt] {\shortstack{Total inventory\\for each hospital}} (10.south east);%
+	
+	\end{tikzpicture}
+	\end{center}
+	
+		Position 1 to 5:
+	Total number of platelets from 0 to 4 remaining days of shelf life. Items with 0 days of shelf life will expire in the current time step. Items with 4 days of remaining shelf life have just been produced.
+	
+	Position 6:
+	Represent the day of the week from 1 to 7, Monday is the first day of the week.
+	
+	Position 7 to 10:
+	Represent the sum of the inventory for each of the 4 hospitals connected to this vendor.
+	
+	Now it's clear that the state space for this system is discrete.
+	
+	For the action space, the scheme is very similar, the deep reinforcement agent works with discrete actions represented by a tuple.The proposed system has the need to produce two types of actions simultaneously , so we have the need to encode these two values within a single index of the action vector.
+	The first type of action has to do with how many units of platelets are extracted from the collected blood for the next time step. This action can be expressed as a percentage of the total donor pool for the current time step (day).Because these percentage is a continuous quantity, we chose to discretize it into 10\% intervals,this means we have 11 values from 0\% to 100\%.
+	The second kind of action is related to how much product to ship to the hospitals and medical centers (as a total). Considering the demand distribution for all the hospitals, we chose a value of 99 as an absolute maximum for this number, this means we have 100 possible values for this kind of action (from 0 to 99). If we multiply the possibilities of the two types of actions (11 x 100), we get a total of 1100 possible actions for this system. Here we can note that the action space for this system is discrete, because the system can perform one and only one action in a given time step, and the chosen action is well defined as a binary option.This means that a typical decision for this agent is a one-hot encoded vector, where the index of the one is the value for the action. This is important, because other variations of deep reinforcement learning allow the decision to be continuous, this means the agent could choose to execute several actions with values between 0 and 1.The resulting vector can be represented as follows:
+	
+		\begin{center}
+		\begin{tikzpicture}[
+		% -{Stealth[length = 2.5pt]},
+		start chain = going right,
+		node distance = 0pt,
+		MyStyle/.style={draw, minimum width=2em, minimum height=2em, 
+			outer sep=0pt, on chain},
+		]
+		\node [MyStyle] (1) {$1$};
+		\node [MyStyle] (2) {$2$};
+		\node [MyStyle] (3) {$3$};
+		\node [MyStyle] (4) {$4$};
+		\node [MyStyle] (5) {$...$};
+		\node [MyStyle] (6) {$1096$};
+		\node [MyStyle] (7) {$1097$};
+		\node [MyStyle] (8) {$1098$};
+		\node [MyStyle] (9) {$1099$};
+		\node [MyStyle] (10) {$1100$};
+		
+		
+		\end{tikzpicture}
+	\end{center}
+
+	To extract both actions based on the index of the vector, these basic operation can be performed:
+	\[ Production\ \% = 10({{(n-1)}\mod11}) \]
+	\[ Total\ Shipment = \floor{\frac{n-1}{11}}\]
+	
+
+	\subsection{Goal Programming Model}
 
 
 \begin{equation}
 	\begin{array}{ll@{}ll}
-	& \displaystyle Q(s_{t},a_{t}) \longleftarrow  (1 - \alpha ).Q(s_{t},a_{t}) + \alpha .(r_{t} + \gamma . \max Q(s_{t+1},a))\\
+	& \displaystyle Q(s_{t},a_{t}) \longleftarrow (1 - \alpha ).Q(s_{t},a_{t}) + \alpha .(r_{t} + \gamma . \max Q(s_{t+1},a))\\
 	\end{array}
 	\label{eq:Eq32}
 	\end{equation}	
@@ -150,7 +234,7 @@
 	\textbf{Objective Function}
 	\begin{equation}
 	\begin{array}{ll@{}ll}
-	\min  & \displaystyle\sum\limits_{h \in H}&(I_{h0}CV + F_{h}CF)\\
+	\min & \displaystyle\sum\limits_{h \in H}&(I_{h0}CV + F_{h}CF)\\
 	\end{array}
 	\label{eq:Eq31}
 	\end{equation}
@@ -196,7 +280,7 @@ Constraints 2 and 3 can be linearised as follows:
  
 
 Linearisation Equation 2
-  	\begin{equation}
+ 	\begin{equation}
 	\begin{array}{ll@{}ll}
 	& \displaystyle -I_{h1} - X_{h1} + D_{h} \leq M*YI_{h0} \ \ \forall \ \ h\\
 	\end{array}
@@ -204,14 +288,14 @@ Linearisation Equation 2
 	\end{equation}
 
 
-  	\begin{equation}
+ 	\begin{equation}
 	\begin{array}{ll@{}ll}
 	& \displaystyle I_{h1} + X_{h1} - D_{h} \leq M(1-YI_{h0}) \ \ \forall \ \ h\\
 	\end{array}
 	\label{eq:Eq33}	
 	\end{equation}
 
-  	\begin{equation}
+ 	\begin{equation}
 	\begin{array}{ll@{}ll}
 	& \displaystyle I_{h0} \geq 0 \ \ \forall \ \ h\\
 	\end{array}
@@ -219,14 +303,14 @@ Linearisation Equation 2
 	\end{equation}
 
 
-  	\begin{equation}
+ 	\begin{equation}
 	\begin{array}{ll@{}ll}
 	& \displaystyle I_{h0} \geq I_{h1} + X_{h1} - D_{h} \ \ \forall \ \ h\\
 	\end{array}
 	\label{eq:Eq33}	
 	\end{equation}
 
-  	\begin{equation}
+ 	\begin{equation}
 	\begin{array}{ll@{}ll}
 	& \displaystyle I_{h0} \leq M(1-YI_{h0}) \ \ \forall \ \ h\\
 	\end{array}
@@ -257,7 +341,7 @@ Linearisation Equation 3
 	\label{eq:Eq32}
 	\end{equation}	
 	
-	  	\begin{equation}
+	 	\begin{equation}
 	\begin{array}{ll@{}ll}
 	& \displaystyle F_{h} \geq 0 \ \ \forall \ \ h\\
 	\end{array}
@@ -265,7 +349,7 @@ Linearisation Equation 3
 	\end{equation}
 
 
-  	\begin{equation}
+ 	\begin{equation}
 	\begin{array}{ll@{}ll}
 	& \displaystyle F_{h} \geq D_{h} - \sum\limits_{r \in R}(I_{hr} + X_{hr}) \ \ \forall \ \ h\\
 	\end{array}
