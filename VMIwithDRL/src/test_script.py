@@ -50,8 +50,8 @@ if __name__ == '__main__':
 
     train_runs = 1000
     model = VMI(4, 100, 5,train_runs, initial_state, 5, 100)
-    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
-                          epsilon_function='linear', min_epsilon=0.01,epsilon_min_percentage=0.10)
+    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=128, memory=1825, use_gpu=True,
+                          epsilon_function='linear', min_epsilon=0.001,epsilon_min_percentage=0.25,lr=0.0005)
     rewards = agent.run()
     agent.validate(50, 365)
     log = model.log["train"]

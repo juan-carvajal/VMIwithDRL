@@ -53,7 +53,7 @@ class NN(nn.Module):
 class TrainingAgent:
 
     def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.999,
-                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear'):
+                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear',lr=1e-3):
 
         if epsilon_function == 'linear':
             self.epsilon_function = self.linear_epsilon
@@ -92,7 +92,7 @@ class TrainingAgent:
             print("Training model on CPU.")
         # self.loss = nn.SmoothL1Loss()
         self.loss = nn.MSELoss()
-        self.optizer = optim.Adam(self.q_network.parameters(), amsgrad=True)
+        self.optizer = optim.Adam(self.q_network.parameters(),lr=lr, amsgrad=True)
         for target_param, param in zip(self.q_network.parameters(), self.target_network.parameters()):
             target_param.data.copy_(param)
 
