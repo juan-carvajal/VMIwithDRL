@@ -2,6 +2,7 @@ from implementation.hospital import Hospital
 import numpy as np
 from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
 #from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerNonGoal import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -9,6 +10,7 @@ from sklearn.metrics import mean_squared_error
 import timeit
 import math
 import pandas as pd
+from implementation.inventory import FIFOInventory
 from statistics import mean
 import json
 from scipy import stats
@@ -17,21 +19,21 @@ from scipy import stats
 class VMI(Model):
     # LOS ESTADOS DE ESTA CLASE SON LOS NIVELES DE INVENTARIOS QUE TIENE PARA CADA UNA DE LAS CADUCIDADES
     # LAS ACCIONES POSIBLES VAN DESDE 0 HASTA MAX_A
-    def __init__(self, hospitals, max_A, shelf_life,train_runs, initial_state=None, exp_cost=None, stockout_cost=None):
+    def __init__(self, hospitals, max_A, shelf_life, train_runs, initial_state=None, exp_cost=None, stockout_cost=None):
         super(VMI, self).__init__(initial_state, max_A * 11, len(initial_state))
         self.year_day = 0
         self.year = 0
         self.day = 1
-        self.train_runs=train_runs
+        self.train_runs = train_runs
         self.shelf_life = shelf_life
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
-        self.hospitals = [Hospital([0] * shelf_life, None, 1.5 * exp_cost, stockout_cost) for _ in range(hospitals)]
+        self.hospitals = [Hospital([0] * shelf_life, 1.5 * exp_cost, stockout_cost) for _ in range(hospitals)]
         # [Hospital([0] * shelf_life, None, exp_cost*1.5, stockout_cost*1.5)] * hospitals
         self.demands_and_donors = pd.read_csv(r'implementation/run_parameters.csv')
         # print(self.demands_and_donors)
         self.demand_registry = [deque(maxlen=3) for _ in range(hospitals)]
-        self.log = {"train":{},"validate":{}}
+        self.log = {"train": {}, "validate": {}}
         self.solve_memory = {}
 
     def model_logic(self, state, action):
@@ -60,10 +62,12 @@ class VMI(Model):
 
         II = []
         for i in self.hospitals:
-            II.append(i.inventory)
-        demand_forecast = [round(mean(x)) for x in self.demand_registry] if len(
-            self.demand_registry[0]) >= 3 else self.get_average_demand(state[5])
-        # demand_forecast=self.get_average_demand(state[5])
+            II.append(i.inventory.inventory)
+
+        # print(II , state[self.shelf_life:])
+        # demand_forecast = [round(mean(x)) for x in self.demand_registry] if len(
+        #     self.demand_registry[0]) >= 3 else self.get_average_demand(state[5])
+        demand_forecast = self.get_average_demand(state[5])
         # self.forecast_acc_mse+=mean_squared_error(demands,demand_forecast)
         # print(self.forecast_acc_mse)
 
@@ -99,7 +103,7 @@ class VMI(Model):
             reward += r
 
         next_state, dc_exp = self.update_inventory_bloodbank(state, prep_donors, A,
-                                                             [sum(i.inventory) for i in self.hospitals])
+                                                             [sum(i.inventory.inventory) for i in self.hospitals])
         # print(donors)
         # print(next_state)
 
@@ -107,8 +111,9 @@ class VMI(Model):
         # reward=0
         # print(reward)
         year = self.year
-        if year<self.train_runs:
-            data = {"rewards": rewards, "stockouts": stockouts, "expirees": expireds, "allocation": rep, "shipment_size": A,"production_level":(((action % 11) * 10) / 100.0),
+        if year < self.train_runs:
+            data = {"rewards": rewards, "stockouts": stockouts, "expirees": expireds, "allocation": rep,
+                    "shipment_size": A, "production_level": (((action % 11) * 10) / 100.0),
                     "inventory": state[:self.shelf_life], "donors": donors, "reward": reward, "demands": demands,
                     'DC_expirees': state[0], 'II': II, 'Used_LP_Model': used_model}
             if year in self.log["train"]:
@@ -117,7 +122,8 @@ class VMI(Model):
                 self.log["train"][year] = []
                 self.log["train"][year].append(data)
         else:
-            data = {"rewards": rewards, "stockouts": stockouts, "expirees": expireds, "allocation": rep, "shipment_size": A,"production_level":(((action % 11) * 10) / 100.0),
+            data = {"rewards": rewards, "stockouts": stockouts, "expirees": expireds, "allocation": rep,
+                    "shipment_size": A, "production_level": (((action % 11) * 10) / 100.0),
                     "inventory": state[:self.shelf_life], "donors": donors, "reward": reward, "demands": demands,
                     'DC_expirees': state[0], 'II': II, 'Used_LP_Model': used_model}
             if year in self.log["validate"]:
@@ -144,43 +150,38 @@ class VMI(Model):
         # print("Solutions buffer:",len(self.solve_memory))
         self.forecast_acc_mse = 0
         self.year_day = 0
-        self.year+=1
-        self.hospitals = [Hospital([0] * self.shelf_life, None, self.exp_cost * 1.5, self.stockout_cost) for _ in
+        self.year += 1
+        self.hospitals = [Hospital([0] * self.shelf_life, self.exp_cost * 1.5, self.stockout_cost) for _ in
                           range(len(self.hospitals))]
         for i in self.demand_registry:
             i.clear()
 
     def update_inventory_bloodbank(self, state, donors, delivered, hospital_new_inv):
-        state_aux = [0] * (self.shelf_life + 1)
-        dc_exp = state[0]
-        for i in range(self.shelf_life):
-            if (i == 0):
-                state_aux[i] = max(0, state[i + 1] - delivered)
-            elif 0 < i < 4:
-                state_aux[i] = max(0, state[i + 1] - max(0, delivered - sum(state[:i])))
-            elif (i == 4):
-                state_aux[i] = max(0, donors - max(0, delivered - sum(state[:i])))
+        inv = FIFOInventory(state[:self.shelf_life])
+        stk = inv.pop(delivered)
+        dc_exp = inv.age()
+        supply = [0] * self.shelf_life
+        supply[-1] = donors
+        inv.push(supply)
 
-        state_aux[5] = (state[5] % 7) + 1
-        state_aux += hospital_new_inv
-        #         state_aux=[i for i in state]
-        #         state_aux[4]+=donors
-        #         d=action
-        #         for i in range(len(state_aux[:self.shelf_life])):
-        #             if d > 0:
-        #                 rest = state_aux[i] if d > state_aux[i] else d
-        #                 state_aux[i] -= rest
-        #                 d -= rest
-        #         dc_exp=state_aux[0]
-        #         for i in range(len(state_aux[:self.shelf_life])):
-        #             if i==self.shelf_life-1:
-        #                 state_aux[i]=0
-        #             else:
-        #                 state_aux[i]=state_aux[i+1]
+        if stk > 0:
+            raise Exception("Malfunction : DC should never incur in stockouts. ")
+        # state_aux = [0] * (self.shelf_life)
+        # dc_exp = state[0]
+        # for i in range(self.shelf_life):
+        #     if (i == 0):
+        #         state_aux[i] = max(0, state[i + 1] - delivered)
+        #     elif 0 < i < 4:
+        #         state_aux[i] = max(0, state[i + 1] - max(0, delivered - sum(state[:i])))
+        #     elif (i == 4):
+        #         state_aux[i] = max(0, donors - max(0, delivered - sum(state[:i])))
         #
-        #         state_aux[self.shelf_life] = (state[self.shelf_life] % 7) + 1
+        # state_aux[5] = (state[5] % 7) + 1
         #
-        #         state_aux[self.shelf_life+1:]=hospital_new_inv
+        # state_aux += hospital_new_inv
+        state_aux=inv.inventory
+        state_aux+=[(state[5] % 7) + 1]
+        state_aux+=hospital_new_inv
         return state_aux, dc_exp
 
     def arima_forecast(self):

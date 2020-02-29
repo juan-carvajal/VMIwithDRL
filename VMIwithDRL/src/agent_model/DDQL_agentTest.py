@@ -297,7 +297,7 @@ class TrainingAgent:
 
     def constant_v2_epsilon(self, run):
         m = int((1 - self.epsilon_min_percentage) * self.runs)
-        return 0.0 if run >= m else self.min_epsilon
+        return self.min_epsilon if run >= m else 0.01
 
     def cos_epsilon(self, run):
         # ((0.5*COS(H5*PI()/5))+0.5)*(1-(H5/350))

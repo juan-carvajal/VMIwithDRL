@@ -119,25 +119,12 @@ class AllocationOptimizer():
                 #                                        mdl.sum([self.II[3][r] for (r) in self.R]) + mdl.sum([x[3, r] for (r) in self.R])) /
                 #                                self.D[3])
 
-                mdl.set_time_limit(20)
                 mdl.solve()
                 a = [[0 for r in range(len(self.R))] for h in range(len(self.H))]
                 for r in range(5):
                     for h in range(4):
-                        a[h][r] = x[h, r].solution_value
-                best_solve_gap=mdl.solve_details.mip_relative_gap
-                if best_solve_gap>0.02:
-                    mdl.set_time_limit(30)
-                    print("Resolving again, Initial Solve Gap:",best_solve_gap)
-                    mdl.solve()
-                    new_solve_gap=mdl.solve_details.mip_relative_gap
-                    if new_solve_gap<best_solve_gap:
-                        best_solve_gap=new_solve_gap
-                        for r in range(5):
-                            for h in range(4):
-                                a[h][r] = x[h, r].solution_value
-                    print("Final Solve Gap:", best_solve_gap)
-                print(self.A,a,mdl.objective_value)
+                        a[h][r] =int( x[h, r].solution_value)
+
             # The status of the solution is printed to the screen
 
             # print("Status:", mdl.get_solve_status())
