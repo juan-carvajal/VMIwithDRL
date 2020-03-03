@@ -3,7 +3,8 @@ Created on 17/11/2019
 @author: juan0
 '''
 # from agent_model.training_agent_torch3 import TrainingAgent
-from agent_model.DDQL_agent import TrainingAgent
+#from agent_model.DDQL_agent import TrainingAgent
+from agent_model.ClippedDDQN_agent import TrainingAgent
 # from implementation.VMImodel import VMI
 from implementation.VMImodelVariable import VMI
 from matplotlib.offsetbox import (TextArea, DrawingArea, OffsetImage, AnnotationBbox)
@@ -46,7 +47,8 @@ def send_mail():
 
 
 if __name__ == '__main__':
-    initial_state = [10, 10, 10, 10, 10, 1, 0, 0, 0, 0]
+    hosp_inv=[0]*20
+    initial_state = [10, 10, 10, 10, 10, 1]+hosp_inv
     # print(tensorflow.test.is_gpu_available())
     # magic numbers: runs 150 , eppercentage:0.25 , min_ep:0.05 , batch:32 , memory:1825
 
@@ -54,10 +56,13 @@ if __name__ == '__main__':
     # agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=128, memory=1825, use_gpu=True,
     #                       epsilon_function='linear', min_epsilon=0.001, epsilon_min_percentage=0.25, lr=0.0005)
 
-    train_runs = 150
+
+    # agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=10000, use_gpu=True,
+    #                       epsilon_function='linear', min_epsilon=0.005, epsilon_min_percentage=0.2)
+    train_runs = 2000
     model = VMI(4, 100, 5, train_runs, initial_state, 5, 100)
-    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=128, memory=1825, use_gpu=True,
-                          epsilon_function='consv2', min_epsilon=0.005, epsilon_min_percentage=0.2, lr=0.0005)
+    agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
+                          epsilon_function='linear', min_epsilon=0.05, epsilon_min_percentage=0.05)
     rewards = agent.run()
     validate_runs = 100
     val_rewards = agent.validate(validate_runs, 365)
@@ -112,7 +117,7 @@ if __name__ == '__main__':
                           'H3_A4', 'H4_A0', 'H4_A1', 'H4_A2', 'H4_A3', 'H4_A4', 'H1_II0', 'H1_II1', 'H1_II2', 'H1_II3',
                           'H1_II4', 'H2_II0', 'H2_II1', 'H2_II2', 'H2_II3', 'H2_II4', 'H3_II0', 'H3_II1', 'H3_II2',
                           'H3_II3', 'H3_II4', 'H4_II0', 'H4_II1', 'H4_II2', 'H4_II3', 'H4_II4', 'production_level']
-    log_export.to_csv('output/data.csv')
+    log_export.to_csv('output/train.csv')
 
     log_data = {"stockouts": stockouts, "expirees": expirees, "dc_expirees": dc_expirees}
     # print(log_data)
@@ -211,7 +216,7 @@ if __name__ == '__main__':
                           'H3_A4', 'H4_A0', 'H4_A1', 'H4_A2', 'H4_A3', 'H4_A4', 'H1_II0', 'H1_II1', 'H1_II2', 'H1_II3',
                           'H1_II4', 'H2_II0', 'H2_II1', 'H2_II2', 'H2_II3', 'H2_II4', 'H3_II0', 'H3_II1', 'H3_II2',
                           'H3_II3', 'H3_II4', 'H4_II0', 'H4_II1', 'H4_II2', 'H4_II3', 'H4_II4', 'production_level']
-    log_export.to_csv('output/data.csv')
+    log_export.to_csv('output/evaluate.csv')
 
     log_data = {"stockouts": stockouts, "expirees": expirees, "dc_expirees": dc_expirees}
     # print(log_data)
@@ -270,16 +275,17 @@ if __name__ == '__main__':
 
 
     from mpl_toolkits import mplot3d
-
     df=pd.DataFrame({'Hospital Inventory Position':H_I,
                      'CD Inventory position':CD_I,
                      'Shipment Size Politic Evaluation':A
                      })
-    pivot=df.pivot(index='Hospital Inventory Position',columns='CD Inventory position',values='Shipment Size Politic Evaluation')
+    pivot=df.pivot_table(index='Hospital Inventory Position',columns='CD Inventory position',values='Shipment Size Politic Evaluation')
     ax = sns.heatmap(pivot, cmap='viridis')
     ax.invert_yaxis()
     ax.set_title("Shipment Size Politic Evaluation")
     plt.tight_layout()
+    plt.savefig('output/shipment_politic.png', dpi=300)
+    plt.savefig('output/shipment_politic.svg', dpi=300)
     plt.show()
 
     # M = np.zeros((int(max(H_I) + 1), int(max(CD_I) + 1)))
@@ -299,11 +305,13 @@ if __name__ == '__main__':
                      'CD Inventory position':CD_I,
                      'Production Level Politic Evaluation':P
                      })
-    pivot=df.pivot(index='Hospital Inventory Position',columns='CD Inventory position',values='Production Level Politic Evaluation')
+    pivot=df.pivot_table(index='Hospital Inventory Position',columns='CD Inventory position',values='Production Level Politic Evaluation')
     ax = sns.heatmap(pivot, cmap='viridis')
     ax.invert_yaxis()
     ax.set_title("Production Level Politic Evaluation")
     plt.tight_layout()
+    plt.savefig('output/production_level.png', dpi=300)
+    plt.savefig('output/production_level.svg', dpi=300)
     plt.show()
 
     # M = np.zeros((max(H_I) + 1, max(CD_I) + 1))

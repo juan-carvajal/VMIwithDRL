@@ -10,13 +10,13 @@ if __name__ == '__main__':
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
         # print(tensorflow.test.is_gpu_available())
-        train_runs = 1000
+        train_runs = 250
         #VMI(4, 100, 5,train_runs, initial_state, 5, 100)
         results = {executor.submit(
-            TrainingAgent(model=VMI(4, 100, 5,train_runs, [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], 5, 100), runs=train_runs,
+            TrainingAgent(model=VMI(4, 100, 5,train_runs, [10, 10, 10, 10, 10, 1, 0], 5, 100), runs=train_runs,
                           steps_per_run=365,
-                          batch_size=32, memory=1825, use_gpu=True,
-                          epsilon_function=f, min_epsilon=0.05, epsilon_min_percentage=0.15).run): f for f in functions}
+                          batch_size=32, memory=10000, use_gpu=True,
+                          epsilon_function=f, min_epsilon=0.01, epsilon_min_percentage=0.15).run): f for f in functions}
         rewards = {results[f]: f.result() for f in concurrent.futures.as_completed(results)}
 
     df = pd.DataFrame(rewards)

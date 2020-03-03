@@ -53,7 +53,7 @@ class NN(nn.Module):
 class TrainingAgent:
 
     def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.999,
-                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear', train_period=1):
+                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear', train_period=5,lr=1e-3):
 
         if epsilon_function == 'linear':
             self.epsilon_function = self.linear_epsilon

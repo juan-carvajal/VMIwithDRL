@@ -1,8 +1,8 @@
 from implementation.hospital import Hospital
 import numpy as np
 from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-#from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
-#from implementation.optimizer.AllocationOptimizerNonGoal import AllocationOptimizer
+# from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+# from implementation.optimizer.AllocationOptimizerNonGoal import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
@@ -103,7 +103,7 @@ class VMI(Model):
             reward += r
 
         next_state, dc_exp = self.update_inventory_bloodbank(state, prep_donors, A,
-                                                             [sum(i.inventory.inventory) for i in self.hospitals])
+                                                             [i.inventory.inventory for i in self.hospitals])
         # print(donors)
         # print(next_state)
 
@@ -115,7 +115,7 @@ class VMI(Model):
             data = {"rewards": rewards, "stockouts": stockouts, "expirees": expireds, "allocation": rep,
                     "shipment_size": A, "production_level": (((action % 11) * 10) / 100.0),
                     "inventory": state[:self.shelf_life], "donors": donors, "reward": reward, "demands": demands,
-                    'DC_expirees': state[0], 'II': II, 'Used_LP_Model': used_model}
+                    'DC_expirees': dc_exp, 'II': II, 'Used_LP_Model': used_model}
             if year in self.log["train"]:
                 self.log["train"][year].append(data)
             else:
@@ -125,7 +125,7 @@ class VMI(Model):
             data = {"rewards": rewards, "stockouts": stockouts, "expirees": expireds, "allocation": rep,
                     "shipment_size": A, "production_level": (((action % 11) * 10) / 100.0),
                     "inventory": state[:self.shelf_life], "donors": donors, "reward": reward, "demands": demands,
-                    'DC_expirees': state[0], 'II': II, 'Used_LP_Model': used_model}
+                    'DC_expirees': dc_exp, 'II': II, 'Used_LP_Model': used_model}
             if year in self.log["validate"]:
                 self.log["validate"][year].append(data)
             else:
@@ -179,9 +179,9 @@ class VMI(Model):
         # state_aux[5] = (state[5] % 7) + 1
         #
         # state_aux += hospital_new_inv
-        state_aux=inv.inventory
-        state_aux+=[(state[5] % 7) + 1]
-        state_aux+=hospital_new_inv
+        state_aux = inv.inventory
+        state_aux += [(state[5] % 7) + 1]
+        state_aux += [item for sublist in hospital_new_inv for item in sublist]
         return state_aux, dc_exp
 
     def arima_forecast(self):

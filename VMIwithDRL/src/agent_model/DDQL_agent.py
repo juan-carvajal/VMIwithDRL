@@ -52,8 +52,8 @@ class NN(nn.Module):
 
 class TrainingAgent:
 
-    def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.999,
-                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear',lr=1e-3):
+    def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.99,
+                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear',lr=3e-4):
 
         if epsilon_function == 'linear':
             self.epsilon_function = self.linear_epsilon
@@ -268,11 +268,11 @@ class TrainingAgent:
 
         q_eval = self.q_network.forward(states).gather(1, actions.view(len(batch), 1))
 
-        q_next = self.target_network.forward(next_states).detach()
+        q_next = self.target_network.forward(next_states)
 
         q_target = rewards.view(len(batch), 1) + self.gamma * q_next.max(1)[0].view(len(batch), 1)
         self.optizer.zero_grad()
-        loss = self.loss(q_eval, q_target)
+        loss = self.loss(q_eval, q_target.detach())
         loss.backward()
         self.optizer.step()
         for target_param, param in zip(self.target_network.parameters(), self.q_network.parameters()):
