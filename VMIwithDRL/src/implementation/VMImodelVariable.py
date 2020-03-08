@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-# from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 # from implementation.optimizer.AllocationOptimizerNonGoal import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
@@ -34,7 +34,9 @@ class VMI(Model):
         # print(self.demands_and_donors)
         self.demand_registry = [deque(maxlen=3) for _ in range(hospitals)]
         self.log = {"train": {}, "validate": {}}
-        self.solve_memory = {}
+        self.state_space_memory = []
+        for state in initial_state:
+            self.state_space_memory.append({state})
 
     def model_logic(self, state, action):
         # demands = [5, 10, 15, 20]
@@ -42,6 +44,9 @@ class VMI(Model):
         # demand_data =self.get_demand(state[5])# self.demands_and_donors.iloc[self.year_day]
 
         # donors = demand_data["donors"]
+        for index, value in enumerate(state):
+            if value not in self.state_space_memory[index]:
+                self.state_space_memory[index].add(value)
         donors = 100
         # self.get_donors(state[5])
         demands = self.get_demand(state[5])
@@ -64,9 +69,8 @@ class VMI(Model):
         for i in self.hospitals:
             II.append(i.inventory.inventory)
 
-
-        #demand_forecast = self.get_average_demand(state[5])
-        demand_forecast=demands
+        # demand_forecast = self.get_average_demand(state[5])
+        demand_forecast = demands
 
         opt = AllocationOptimizer(II, A_i, demand_forecast, self.exp_cost, self.stockout_cost, self.shelf_life,
                                   len(self.hospitals))

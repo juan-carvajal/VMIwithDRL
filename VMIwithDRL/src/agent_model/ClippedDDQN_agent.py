@@ -307,7 +307,7 @@ class TrainingAgent:
         return max(self.min_epsilon, c)
 
     def logv2(self,run):
-        return ((1-self.min_epsilon)*np.exp((-(run**2)-run)*(0.000004/2)))+self.min_epsilon
+        return ((1-self.min_epsilon)*np.exp((-(run**2)-run)*(0.000002/2)))+self.min_epsilon
 
 
 class Memory:
