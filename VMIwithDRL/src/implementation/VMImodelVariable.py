@@ -64,22 +64,10 @@ class VMI(Model):
         for i in self.hospitals:
             II.append(i.inventory.inventory)
 
-        # print(II , state[self.shelf_life:])
-        # demand_forecast = [round(mean(x)) for x in self.demand_registry] if len(
-        #     self.demand_registry[0]) >= 3 else self.get_average_demand(state[5])
-        demand_forecast = self.get_average_demand(state[5])
-        # self.forecast_acc_mse+=mean_squared_error(demands,demand_forecast)
-        # print(self.forecast_acc_mse)
 
-        # json_model = json.dumps({"II": II, "A": A_i, "demands": demand_forecast})
-        # if json_model in self.solve_memory:
-        #     rep, used_model = self.solve_memory[json_model], False
-        # else:
-        #
-        #     opt = AllocationOptimizer(II, A_i, demand_forecast, self.exp_cost, self.stockout_cost, self.shelf_life,
-        #                               len(self.hospitals))
-        #     rep, used_model = opt.allocate()
-        #     self.solve_memory[json_model]=rep
+        #demand_forecast = self.get_average_demand(state[5])
+        demand_forecast=demands
+
         opt = AllocationOptimizer(II, A_i, demand_forecast, self.exp_cost, self.stockout_cost, self.shelf_life,
                                   len(self.hospitals))
         rep, used_model = opt.allocate()

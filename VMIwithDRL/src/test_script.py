@@ -62,7 +62,7 @@ if __name__ == '__main__':
     train_runs = 2000
     model = VMI(4, 100, 5, train_runs, initial_state, 5, 100)
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=1825, use_gpu=True,
-                          epsilon_function='linear', min_epsilon=0.05, epsilon_min_percentage=0.05)
+                          epsilon_function='logv2', min_epsilon=0.05, epsilon_min_percentage=0.05)
     rewards = agent.run()
     validate_runs = 100
     val_rewards = agent.validate(validate_runs, 365)

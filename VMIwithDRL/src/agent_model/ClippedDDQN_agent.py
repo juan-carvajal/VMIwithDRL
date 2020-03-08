@@ -57,6 +57,8 @@ class TrainingAgent:
             self.epsilon_function = self.gompertz_epsilon
         elif epsilon_function == 'consv2':
             self.epsilon_function = self.constant_v2_epsilon
+        elif epsilon_function =='logv2':
+            self.epsilon_function=self.logv2
         else:
             raise Exception(
                 'The epsilon_function parameter must be one of these types: (linear, log, constant, cos , gompertz, consv2).')
@@ -303,6 +305,9 @@ class TrainingAgent:
                 self.min_epsilon + ((1 - self.min_epsilon) / 2.0))) * (
                     1 - (run / ((1.0 - self.epsilon_min_percentage) * self.runs)))
         return max(self.min_epsilon, c)
+
+    def logv2(self,run):
+        return ((1-self.min_epsilon)*np.exp((-(run**2)-run)*(0.000004/2)))+self.min_epsilon
 
 
 class Memory:

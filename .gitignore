@@ -123,4 +123,5 @@ dmypy.json
 .pyre/
 
 #Large log file
-**/output/data.csv
+**/output/train.csv
+**/output/evaluate.csv
