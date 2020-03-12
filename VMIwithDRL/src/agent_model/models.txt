@@ -1,0 +1,28 @@
+#AvgPool ,Tanh
+self.fc = nn.Sequential(
+            nn.Conv1d(1, 64, 1),
+            nn.AvgPool1d(self.model.state_dim),
+            nn.Flatten(),
+            nn.Linear(64, 128),
+            nn.Tanh(),
+            nn.Linear(128, 256),
+            nn.Tanh(),
+            nn.Linear(256, model.action_dim)
+        )
+
+#MaxPool , Sigmoid
+
+        self.fc = nn.Sequential(
+            nn.Conv1d(1, 64, 1),
+            nn.MaxPool1d(model.state_dim),
+            nn.Flatten(),
+            nn.Linear(64, 128),
+            nn.Sigmoid(),
+            nn.Linear(128, 256),
+            nn.Sigmoid(),
+            nn.Linear(256, 256),
+            nn.Sigmoid(),
+            nn.Linear(256, 256),
+            nn.Sigmoid(),
+            nn.Linear(256, model.action_dim)
+        )

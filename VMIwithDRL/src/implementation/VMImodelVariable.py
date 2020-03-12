@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 # from implementation.optimizer.AllocationOptimizerNonGoal import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
