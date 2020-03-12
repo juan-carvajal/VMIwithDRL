@@ -28,7 +28,7 @@ class NN(nn.Module):
 
         self.fc = nn.Sequential(
             nn.Conv1d(1, 64, 1),
-            nn.MaxPool1d(model.state_dim),
+            nn.AvgPool1d(model.state_dim),
             nn.Flatten(),
             nn.Linear(64, 128),
             nn.Sigmoid(),
