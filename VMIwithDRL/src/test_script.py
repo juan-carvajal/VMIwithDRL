@@ -59,12 +59,12 @@ if __name__ == '__main__':
 
     # agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=10000, use_gpu=True,
     #                       epsilon_function='linear', min_epsilon=0.005, epsilon_min_percentage=0.2)
-    train_runs = 5000
+    train_runs = 50
     model = VMI(4, 100, 5, train_runs, initial_state, 5, 100)
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=10, memory=100000, use_gpu=True,
                           epsilon_function='logv2', min_epsilon=0.005, epsilon_min_percentage=0.1)
     rewards = agent.run()
-    validate_runs = 500
+    validate_runs = 10
     val_rewards = agent.validate(validate_runs, 365)
     print("Total state space: ", [len(x) for x in model.state_space_memory])
     log = model.log["train"]
@@ -224,6 +224,9 @@ if __name__ == '__main__':
     log_df = pd.DataFrame(log_data)
     log_df.reset_index(level=0, inplace=True)
     # print(log_df)
+    parameters_x=0.01
+    miu_y=0.04
+    sigma_y=0.01
     e_data = log_data['stockouts']
     plt.grid(axis='y', alpha=0.5, linestyle='--', zorder=0)
     plt.hist(e_data, weights=np.zeros_like(e_data) + 1. / len(e_data), edgecolor='black', linewidth=1.2, zorder=100,color='C0')
@@ -231,8 +234,8 @@ if __name__ == '__main__':
     plt.ylabel('Frequency (Relative)')
     plt.title('Stockouts distribution plot (policy evaluation)')
     plt.axvline(mean(e_data), color='k', linestyle='dashed', linewidth=1, zorder=1000)
-    plt.figtext(0.15, 0.86, r'$\mu={:.2f}$'.format(mean(e_data)))
-    plt.figtext(0.15, 0.81, r'$\sigma={:.2f}$'.format(stdev(e_data)))
+    plt.figtext(parameters_x, miu_y, r'$\mu={:.2f}$'.format(mean(e_data)))
+    plt.figtext(parameters_x, sigma_y, r'$\sigma={:.2f}$'.format(stdev(e_data)))
     plt.tight_layout()
     plt.savefig('output/stockouts_politic.png', dpi=300)
     plt.savefig('output/stockouts_politic.svg', dpi=300)
@@ -245,8 +248,8 @@ if __name__ == '__main__':
     plt.ylabel('Frequency (Relative)')
     plt.title('Expirees distribution plot (policy evaluation)')
     plt.axvline(mean(e_data), color='k', linestyle='dashed', linewidth=1, zorder=1000)
-    plt.figtext(0.15, 0.86, r'$\mu={:.2f}$'.format(mean(e_data)))
-    plt.figtext(0.15, 0.81, r'$\sigma={:.2f}$'.format(stdev(e_data)))
+    plt.figtext(parameters_x, miu_y, r'$\mu={:.2f}$'.format(mean(e_data)))
+    plt.figtext(parameters_x, sigma_y, r'$\sigma={:.2f}$'.format(stdev(e_data)))
     plt.tight_layout()
     plt.savefig('output/expirees_politic.png', dpi=300)
     plt.savefig('output/expirees_politic.svg', dpi=300)
@@ -259,8 +262,8 @@ if __name__ == '__main__':
     plt.ylabel('Frequency (Relative)')
     plt.title('DC expirees distribution plot (policy evaluation)')
     plt.axvline(mean(e_data), color='k', linestyle='dashed', linewidth=1, zorder=1000)
-    plt.figtext(0.15, 0.86, r'$\mu={:.2f}$'.format(mean(e_data)))
-    plt.figtext(0.15, 0.81, r'$\sigma={:.2f}$'.format(stdev(e_data)))
+    plt.figtext(parameters_x, miu_y, r'$\mu={:.2f}$'.format(mean(e_data)))
+    plt.figtext(parameters_x, sigma_y, r'$\sigma={:.2f}$'.format(stdev(e_data)))
     plt.tight_layout()
     plt.savefig('output/dc_expirees_politic.png', dpi=300)
     plt.savefig('output/dc_expirees_politic.svg', dpi=300)
@@ -305,8 +308,8 @@ if __name__ == '__main__':
     plt.axvline(mean(val_rewards), color='k', linestyle='dashed', linewidth=1, zorder=1000)
     min_ylim, max_ylim = plt.ylim()
     min_xlim, max_xlim = plt.xlim()
-    plt.figtext(0.15, 0.86, r'$\mu={:.2f}$'.format(mean(val_rewards)))
-    plt.figtext(0.15, 0.81, r'$\sigma={:.2f}$'.format(stdev(val_rewards)))
+    plt.figtext(parameters_x, miu_y, r'$\mu={:.2f}$'.format(mean(val_rewards)))
+    plt.figtext(parameters_x, sigma_y, r'$\sigma={:.2f}$'.format(stdev(val_rewards)))
     plt.tight_layout()
     plt.savefig('output/validate_reward.png', dpi=300)
     plt.savefig('output/validate_reward.svg', dpi=300)
