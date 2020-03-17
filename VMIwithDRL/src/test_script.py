@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     # agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=10000, use_gpu=True,
     #                       epsilon_function='linear', min_epsilon=0.005, epsilon_min_percentage=0.2)
-    train_runs = 2000
+    train_runs = 20
     model = VMI(4, 100, 5, train_runs, initial_state, 5, 100)
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=10, memory=127750, use_gpu=True,
                           epsilon_function='logv2', min_epsilon=0.01, epsilon_min_percentage=0.1)
@@ -140,6 +140,7 @@ if __name__ == '__main__':
     plt.savefig('output/train_politic.png', dpi=300)
     plt.savefig('output/train_politic.svg', dpi=300)
     plt.show()
+    plt.clf()
 
     df = pd.DataFrame(rewards, columns=['rewards'])
     df.reset_index(level=0, inplace=True)
@@ -165,6 +166,7 @@ if __name__ == '__main__':
     plt.savefig('output/train_reward.png', dpi=300)
     plt.savefig('output/train_reward.svg', dpi=300)
     plt.show()
+    plt.clf()
 
     log = model.log["validate"]
     expirees = []
@@ -240,6 +242,7 @@ if __name__ == '__main__':
     plt.savefig('output/stockouts_politic.png', dpi=300)
     plt.savefig('output/stockouts_politic.svg', dpi=300)
     plt.show()
+    plt.clf()
 
     e_data = log_data['expirees']
     plt.grid(axis='y', alpha=0.5, linestyle='--', zorder=0)
@@ -254,6 +257,7 @@ if __name__ == '__main__':
     plt.savefig('output/expirees_politic.png', dpi=300)
     plt.savefig('output/expirees_politic.svg', dpi=300)
     plt.show()
+    plt.clf()
 
     e_data = log_data['dc_expirees']
     plt.grid(axis='y', alpha=0.5, linestyle='--', zorder=0)
@@ -268,6 +272,7 @@ if __name__ == '__main__':
     plt.savefig('output/dc_expirees_politic.png', dpi=300)
     plt.savefig('output/dc_expirees_politic.svg', dpi=300)
     plt.show()
+    plt.clf()
 
 
     # line_tc = 0.8
@@ -314,6 +319,7 @@ if __name__ == '__main__':
     plt.savefig('output/validate_reward.png', dpi=300)
     plt.savefig('output/validate_reward.svg', dpi=300)
     plt.show()
+    plt.clf()
 
     A_data = []
     P_data = []
@@ -346,6 +352,7 @@ if __name__ == '__main__':
     plt.savefig('output/shipment_politic.png', dpi=300)
     plt.savefig('output/shipment_politic.svg', dpi=300)
     plt.show()
+    plt.clf()
 
     # M = np.zeros((int(max(H_I) + 1), int(max(CD_I) + 1)))
     # M[H_I, CD_I] = A
@@ -373,6 +380,7 @@ if __name__ == '__main__':
     plt.savefig('output/production_level.png', dpi=300)
     plt.savefig('output/production_level.svg', dpi=300)
     plt.show()
+    plt.clf()
 
     # M = np.zeros((max(H_I) + 1, max(CD_I) + 1))
     # M[H_I, CD_I] = P
