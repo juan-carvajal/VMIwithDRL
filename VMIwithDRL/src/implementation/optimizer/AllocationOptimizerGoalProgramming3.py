@@ -29,7 +29,7 @@ class AllocationOptimizer():
             # print(self.II)
             RX = list(range(len(self.R)))
             with Model(name='LPOptimizationProblem') as mdl:
-                mdl.context.cplex_parameters.threads = 6
+                mdl.context.cplex_parameters.threads = 12
 
                 x = mdl.integer_var_matrix(self.H, RX, 0, None, "x")
                 I0 = mdl.integer_var_dict(self.H, 0, None, "I0")
@@ -41,11 +41,11 @@ class AllocationOptimizer():
                 cons7_plus = mdl.continuous_var_dict(self.H, 0, None, "Constraint7+")
                 cons7_minus = mdl.continuous_var_dict(self.H, 0, None, "Constraint7-")
 
-                coeff = [5.0, 1, 1, 1]
+                coeff = [5, 1, 1]
 
                 mdl.minimize(mdl.sum(
-                    coeff[0] * (I0[h] * self.CV + F[h] * self.CF) + coeff[1] * cons5_plus[h] + coeff[2] * cons7_plus[h] +
-                    coeff[3] * cons7_minus[h] for h in self.H))
+                    coeff[0] * (I0[h] * self.CV + F[h] * self.CF) + coeff[1] * cons5_plus[h] + coeff[2] * (cons7_plus[h] +
+                     cons7_minus[h]) for h in self.H))
 
                 mdl.add_constraints([- self.II[h][1] - x[h, 1] + self.D[h] <= self.M * YI0[h] for h in self.H])
 
@@ -140,7 +140,7 @@ class AllocationOptimizer():
                 for r in range(5):
                     for h in range(4):
                         a[h][r] = x[h, r].solution_value
-                # best_solve_gap=mdl.solve_details.mip_relative_gap
+            # best_solve_gap=mdl.solve_details.mip_relative_gap
                 # if best_solve_gap>0.02:
                 #     mdl.set_time_limit(40)
                 #     print("Resolving again, Initial Solve Gap:",best_solve_gap)
@@ -206,23 +206,24 @@ class AllocationOptimizer():
 
 
 #
-if __name__== '_main_':
+if __name__== '__main__':
     print("prueba")
     # II = [[0, 2, 0, 3, 0], [0, 1, 0, 3, 3], [0, 1, 2, 2, 5], [0, 3, 5, 1, 1]]
     # D = [5, 5, 5, 5]
     # A = [6, 7, 8, 9, 10]
 
     II = [[9, 0, 4, 0, 0], [0, 0, 21, 0, 21], [0, 0, 13, 5, 9], [0, 0, 23, 0, 0]]
-    D = [15, 11, 2, 9]
-    A = [0, 0, 0, 35, 21]
+    D = [28, 48, 25, 91]
+    A = [0, 0, 0, 6, 3]
 
     M = 1000000
     CF = 100
-    CV = 7.5
+    CV = 5
     R = 5
     H = 4
+    for i in range(365):
 
-    a = AllocationOptimizer(II, A, D, CV, CF, R, H)
-    x = a.allocate()
+        a = AllocationOptimizer(II, A, D, CV, CF, R, H)
+        x = a.allocate()
 
-    print(x)
+        #print(x)

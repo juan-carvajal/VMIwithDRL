@@ -59,10 +59,10 @@ if __name__ == '__main__':
 
     # agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=32, memory=10000, use_gpu=True,
     #                       epsilon_function='linear', min_epsilon=0.005, epsilon_min_percentage=0.2)
-    train_runs = 20
+    train_runs = 3000
     model = VMI(4, 100, 5, train_runs, initial_state, 5, 100)
     agent = TrainingAgent(model=model, runs=train_runs, steps_per_run=365, batch_size=10, memory=127750, use_gpu=True,
-                          epsilon_function='logv2', min_epsilon=0.01, epsilon_min_percentage=0.1)
+                          epsilon_function='constant', min_epsilon=0.2, epsilon_min_percentage=0.1)
     rewards = agent.run()
     validate_runs = 500
     val_rewards = agent.validate(validate_runs, 365)

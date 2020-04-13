@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-#from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 # from implementation.optimizer.AllocationOptimizerNonGoal import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
@@ -69,8 +69,8 @@ class VMI(Model):
         for i in self.hospitals:
             II.append(i.inventory.inventory)
 
-        # demand_forecast = self.get_average_demand(state[5])
-        demand_forecast = demands
+        demand_forecast = self.get_average_demand(state[5])
+        #demand_forecast = demands
 
         opt = AllocationOptimizer(II, A_i, demand_forecast, self.exp_cost, self.stockout_cost, self.shelf_life,
                                   len(self.hospitals))
