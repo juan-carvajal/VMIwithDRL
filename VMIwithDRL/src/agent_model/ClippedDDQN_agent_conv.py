@@ -90,8 +90,8 @@ class TrainingAgent:
         # self.loss = nn.SmoothL1Loss()
         self.loss1 = nn.MSELoss()
         self.loss2 = nn.MSELoss()
-        self.optizer1 = optim.Adam(self.model1.parameters(), lr=lr, amsgrad=True)
-        self.optizer2 = optim.Adam(self.model2.parameters(), lr=lr, amsgrad=True)
+        self.optizer1 = optim.Adam(self.model1.parameters(), lr=lr, amsgrad=True,weight_decay=0.05)
+        self.optizer2 = optim.Adam(self.model2.parameters(), lr=lr, amsgrad=True,weight_decay=0.05)
 
     def run(self):
         run_rewards = []
@@ -112,8 +112,19 @@ class TrainingAgent:
             while not terminate:
                 action = 0
                 if np.random.rand() <= epsilon:
-                    #                     action = random.randrange(self.model.action_dim)
-                    action = random.choice(tuple(self.model.valid_actions(current_state)))
+                    q_vals = self.model1.forward(self.tensor.FloatTensor(current_state)).cpu().detach().numpy()
+                    valid_actions=tuple(self.model.valid_actions(current_state))
+                    valid_qvals=np.zeros(len(valid_actions))
+                    for i in valid_actions:
+                        valid_qvals[i]=q_vals[i]
+                    min_val=np.min(valid_qvals)
+                    valid_qvals=valid_qvals-min_val
+                    valid_qvals=valid_qvals/sum(valid_qvals)
+                    action = np.random.choice(valid_actions, 1,
+                                  p=valid_qvals)[0]
+
+
+                    #action = random.choice(tuple(self.model.valid_actions(current_state)))
                 else:
                     opt_act_count += 1
                     q_vals = np.ravel(self.model1.forward(self.tensor.FloatTensor(current_state).view(

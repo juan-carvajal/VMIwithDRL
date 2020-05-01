@@ -221,9 +221,13 @@ if __name__== '__main__':
     CV = 5
     R = 5
     H = 4
-    for i in range(365):
+    a = AllocationOptimizer(II, A, D, CV, CF, R, H)
+    x = a.allocate()
 
-        a = AllocationOptimizer(II, A, D, CV, CF, R, H)
-        x = a.allocate()
-
-        #print(x)
+    print(x)
+    # for i in range(365):
+    #
+    #     a = AllocationOptimizer(II, A, D, CV, CF, R, H)
+    #     x = a.allocate()
+    #
+    #     #print(x)

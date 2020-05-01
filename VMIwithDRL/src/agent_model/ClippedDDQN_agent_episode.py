@@ -18,23 +18,30 @@ import time
 import time
 
 
+@torch.no_grad()
+def init_weights(m):
+    print(m)
+    if type(m) == nn.Linear:
+        m.weight.fill_(0)
+        print(m.weight)
+
 class NN(nn.Module):
 
     def __init__(self, model):
         super(NN, self).__init__()
         # self.norm=nn.LayerNorm(model.state_dim)
-        self.model=model
-
+        self.model = model
 
         self.fc = nn.Sequential(
             nn.Linear(model.state_dim, 256),
-            nn.ReLU(),
+            nn.Sigmoid(),
             nn.Linear(256, 256),
-            nn.ReLU(),
+            nn.Sigmoid(),
             nn.Linear(256, 256),
-            nn.ReLU(),
+            nn.Sigmoid(),
             nn.Linear(256, model.action_dim)
         )
+        #self.fc.apply(init_weights)
 
     def forward(self, x):
         return self.fc(x)
@@ -42,8 +49,9 @@ class NN(nn.Module):
 
 class TrainingAgent:
 
-    def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.99,
-                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear',lr=3e-4):
+    def __init__(self, model, runs, steps_per_run, batch_size, min_epsilon=0.05, gamma=0.99, train_frame="step",
+                 train_period=1,
+                 memory=5000, use_gpu=False, epsilon_min_percentage=0.1, epsilon_function='linear', lr=3e-4):
 
         if epsilon_function == 'linear':
             self.epsilon_function = self.linear_epsilon
@@ -57,14 +65,16 @@ class TrainingAgent:
             self.epsilon_function = self.gompertz_epsilon
         elif epsilon_function == 'consv2':
             self.epsilon_function = self.constant_v2_epsilon
-        elif epsilon_function =='logv2':
-            self.epsilon_function=self.logv2
+        elif epsilon_function == 'logv2':
+            self.epsilon_function = self.logv2
         else:
             raise Exception(
                 'The epsilon_function parameter must be one of these types: (linear, log, constant, cos , gompertz, consv2).')
         self.model = model
         self.memory = Memory(memory)
         self.epsilon = 1
+        self.train_period = train_period
+        self.train_frame = train_frame
         self.batch_size = batch_size
         self.epsilon_min_percentage = epsilon_min_percentage
         self.min_epsilon = min_epsilon
@@ -74,8 +84,8 @@ class TrainingAgent:
         self.use_gpu = use_gpu and torch.cuda.is_available()
         self.tensor = torch.cuda if self.use_gpu else torch
         self.model1 = NN(model)
-        self.model2=NN(model)
-        self.tau=0.01
+        self.model2 = NN(model)
+        self.tau = 0.01
         if self.use_gpu:
             print("Training model on GPU.")
             self.model1.to("cuda")
@@ -85,10 +95,10 @@ class TrainingAgent:
 
         self.loss1 = nn.SmoothL1Loss()
         self.loss2 = nn.SmoothL1Loss()
-        # self.loss1=nn.MSELoss()
-        # self.loss2=nn.MSELoss()
-        self.optizer1 = optim.Adam(self.model1.parameters(),lr=lr, amsgrad=True,weight_decay=0.05)
-        self.optizer2 = optim.Adam(self.model2.parameters(), lr=lr, amsgrad=True,weight_decay=0.05)
+        # self.loss1 = nn.MSELoss()
+        # self.loss2 = nn.MSELoss()
+        self.optizer1 = optim.Adam(self.model1.parameters(), lr=lr, amsgrad=True, weight_decay=0.01)
+        self.optizer2 = optim.Adam(self.model2.parameters(), lr=lr, amsgrad=True, weight_decay=0.01)
 
     def run(self):
         run_rewards = []
@@ -111,15 +121,15 @@ class TrainingAgent:
                 if np.random.rand() <= epsilon:
 
                     # q_vals = self.model1.forward(self.tensor.FloatTensor(current_state)).cpu().detach().numpy()
-                    # valid_actions=tuple(self.model.valid_actions(current_state))
-                    # valid_qvals=np.zeros(len(valid_actions))
+                    # valid_actions = tuple(self.model.valid_actions(current_state))
+                    # valid_qvals = np.zeros(len(valid_actions))
                     # for i in valid_actions:
-                    #     valid_qvals[i]=q_vals[i]
-                    # min_val=np.min(valid_qvals)
-                    # valid_qvals=valid_qvals-min_val
-                    # valid_qvals=valid_qvals/sum(valid_qvals)
+                    #     valid_qvals[i] = q_vals[i]
+                    # min_val = np.min(valid_qvals)
+                    # valid_qvals = valid_qvals - min_val
+                    # valid_qvals = valid_qvals / sum(valid_qvals)
                     # action = np.random.choice(valid_actions, 1,
-                    #               p=valid_qvals)[0]
+                    #                           p=valid_qvals)[0]
                     action = random.choice(tuple(self.model.valid_actions(current_state)))
                 else:
                     opt_act_count += 1
@@ -145,12 +155,17 @@ class TrainingAgent:
                 state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
                 total_reward += reward
                 self.memory.append((state, action, next_state, reward, terminal))
-                if len(self.memory.memory) >= self.memory.memory.maxlen:
+                if len(
+                        self.memory.memory) >= self.memory.memory.maxlen and self.train_frame == "step" and run_step_count % self.train_period == 0:
                     self.replay_train()
+
                 current_state = next_state
                 run_step_count += 1
                 if self.step_per_run is not None and run_step_count >= self.step_per_run:
                     terminate = True
+            if len(
+                    self.memory.memory) >= self.memory.memory.maxlen and self.train_frame == "episode" and run % self.train_period == 0:
+                    self.replay_train()
             run_rewards.append(total_reward)
 
             if memory_full_at_start:
@@ -169,7 +184,7 @@ class TrainingAgent:
             else:
                 print(
                     'Run: {0:8d} || Reward: {1:12.2f} || Epsilon: {2:6.3%} || Avg.Q: {3:6.2f} || Exploitation: {4:3.2%} || ETA: Estimating...'
-                    .format(run, total_reward, epsilon, avg_q_val / run_step_count, opt_act_count / run_step_count))
+                        .format(run, total_reward, epsilon, avg_q_val / run_step_count, opt_act_count / run_step_count))
             self.model.reset_model()
 
         # for i in avg_q_val:
@@ -270,6 +285,7 @@ class TrainingAgent:
         next_states = self.tensor.FloatTensor(next_states)
         rewards = self.tensor.FloatTensor(rewards)
 
+
         curr_q_1 = self.model1.forward(states).gather(1, actions.view(len(batch), 1))
         curr_q_2 = self.model2.forward(states).gather(1, actions.view(len(batch), 1))
 
@@ -277,7 +293,6 @@ class TrainingAgent:
             torch.max(self.model1.forward(next_states), 1)[0],
             torch.max(self.model2.forward(next_states), 1)[0]
         )
-
 
         q_target = rewards.view(len(batch), 1) + self.gamma * q_next.view(len(batch), 1)
         self.optizer1.zero_grad()
@@ -289,6 +304,7 @@ class TrainingAgent:
         loss2 = self.loss2(curr_q_2, q_target.detach())
         loss2.backward()
         self.optizer2.step()
+
 
 
     def constant_epsilon(self, run):
@@ -318,8 +334,8 @@ class TrainingAgent:
                     1 - (run / ((1.0 - self.epsilon_min_percentage) * self.runs)))
         return max(self.min_epsilon, c)
 
-    def logv2(self,run):
-        return ((1-self.min_epsilon)*np.exp((-(run**2)-run)*(0.0000015/2)))+self.min_epsilon
+    def logv2(self, run):
+        return ((1 - self.min_epsilon) * np.exp((-(run ** 2) - run) * (0.0000015 / 2))) + self.min_epsilon
 
 
 class Memory:

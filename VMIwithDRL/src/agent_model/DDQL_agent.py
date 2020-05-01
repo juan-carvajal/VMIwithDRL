@@ -23,13 +23,12 @@ class NN(nn.Module):
         super(NN, self).__init__()
         # self.norm=nn.LayerNorm(model.state_dim)
         self.fc = nn.Sequential(
-            nn.Sigmoid(),
             nn.Linear(model.state_dim, 256),
-            nn.Sigmoid(),
+            nn.ReLU(),
             nn.Linear(256, 256),
-            nn.Sigmoid(),
+            nn.ReLU(),
             nn.Linear(256, 256),
-            nn.Sigmoid(),
+            nn.ReLU(),
             nn.Linear(256, model.action_dim)
         )
         self.l1 = nn.Linear(model.state_dim, 256)
@@ -39,15 +38,15 @@ class NN(nn.Module):
         # print(list(self.parameters()))
 
     def forward(self, x):
-        x = torch.sigmoid(x)
-        x = self.l1(x)
-        x = torch.sigmoid(x)
-        x = self.l2(x)
-        x = torch.sigmoid(x)
-        x = self.l3(x)
-        x = torch.sigmoid(x)
-        return self.l4(x)
-        # return self.fc(x)
+        # x = torch.sigmoid(x)
+        # x = self.l1(x)
+        # x = torch.sigmoid(x)
+        # x = self.l2(x)
+        # x = torch.sigmoid(x)
+        # x = self.l3(x)
+        # x = torch.sigmoid(x)
+        # return self.l4(x)
+        return self.fc(x)
 
 
 class TrainingAgent:
@@ -90,9 +89,9 @@ class TrainingAgent:
             self.target_network.to("cuda")
         else:
             print("Training model on CPU.")
-        # self.loss = nn.SmoothL1Loss()
-        self.loss = nn.MSELoss()
-        self.optizer = optim.Adam(self.q_network.parameters(),lr=lr, amsgrad=True)
+        self.loss = nn.SmoothL1Loss()
+        #self.loss = nn.MSELoss()
+        self.optizer = optim.Adam(self.q_network.parameters(),lr=lr, amsgrad=True,weight_decay=0.05)
         for target_param, param in zip(self.q_network.parameters(), self.target_network.parameters()):
             target_param.data.copy_(param)
 

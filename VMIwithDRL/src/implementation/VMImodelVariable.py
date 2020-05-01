@@ -1,7 +1,7 @@
 from implementation.hospital import Hospital
 import numpy as np
-#from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
 # from implementation.optimizer.AllocationOptimizerNonGoal import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
@@ -174,6 +174,7 @@ class VMI(Model):
         state_aux = inv.inventory
         state_aux += [(state[5] % 7) + 1]
         state_aux += [item for sublist in hospital_new_inv for item in sublist]
+        state_aux+=[delivered]
         return state_aux, dc_exp
 
     def arima_forecast(self):
