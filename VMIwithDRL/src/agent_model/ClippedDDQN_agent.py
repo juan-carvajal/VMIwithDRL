@@ -101,7 +101,7 @@ class TrainingAgent:
             current_state = self.model.initial_state
             terminate = False
             run_step_count = 0
-            memory_full_at_start = len(self.memory.memory) >= self.memory.memory.maxlen
+            memory_full_at_start = len(self.memory.memory) >= self.batch_size
             avg_q_val = 0
             opt_act_count = 0
             while not terminate:
@@ -133,7 +133,7 @@ class TrainingAgent:
                 state, action, next_state, reward, terminal = self.model.model_logic(current_state, action)
                 total_reward += reward
                 self.memory.append((state, action, next_state, reward, terminal))
-                if len(self.memory.memory) >= self.memory.memory.maxlen:
+                if len(self.memory.memory) >= self.batch_size:
                     self.replay_train()
                 current_state = next_state
                 run_step_count += 1

@@ -47,17 +47,17 @@ class AllocationOptimizer():
                     coeff[0] * (I0[h] * self.CV + F[h] * self.CF) + coeff[1] * cons5_plus[h] + coeff[2] * (cons7_plus[h] +
                      cons7_minus[h]) for h in self.H))
 
-                mdl.add_constraints([- self.II[h][1] - x[h, 1] + self.D[h] <= self.M * YI0[h] for h in self.H])
+                mdl.add_constraints([- self.II[h][0] - x[h, 0] + self.D[h] <= self.M * YI0[h] for h in self.H])
 
-                mdl.add_constraints(self.II[h][1] + x[h, 1] - self.D[h] <= self.M * (1 - YI0[h]) for h in self.H)
+                mdl.add_constraints(self.II[h][0] + x[h, 0] - self.D[h] <= self.M * (1 - YI0[h]) for h in self.H)
 
                 mdl.add_constraints(I0[h] >= 0 for h in self.H)
 
-                mdl.add_constraints(I0[h] >= self.II[h][1] + x[h, 1] - self.D[h] for h in self.H)
+                mdl.add_constraints(I0[h] >= self.II[h][0] + x[h, 0] - self.D[h] for h in self.H)
 
                 mdl.add_constraints(I0[h] <= self.M * (1 - YI0[h]) for h in self.H)
 
-                mdl.add_constraints(I0[h] <= self.II[h][1] + x[h, 1] - self.D[h] + self.M * YI0[h] for h in self.H)
+                mdl.add_constraints(I0[h] <= self.II[h][0] + x[h, 0] - self.D[h] + self.M * YI0[h] for h in self.H)
 
                 ########################################
 
@@ -136,10 +136,21 @@ class AllocationOptimizer():
 
                 mdl.set_time_limit(60)
                 mdl.solve()
-                a = [[0 for r in range(len(self.R))] for h in range(len(self.H))]
-                for r in range(5):
-                    for h in range(4):
-                        a[h][r] = x[h, r].solution_value
+
+                # print("--------------------------------------------------------------------------------------")
+                # print(self.II)
+                # print(self.D)
+                # print(self.A)
+                a = [[x[h, r].solution_value for r in range(len(self.R))] for h in range(len(self.H))]
+                # print(a)
+
+
+                # print([I0[h].solution_value for h in range(4)])
+                # print([F[h].solution_value for h in range(4)])
+                # a = [[0 for r in range(len(self.R))] for h in range(len(self.H))]
+                # for r in range(5):
+                #     for h in range(4):
+                #         a[h][r] = x[h, r].solution_value
             # best_solve_gap=mdl.solve_details.mip_relative_gap
                 # if best_solve_gap>0.02:
                 #     mdl.set_time_limit(40)

@@ -1,10 +1,13 @@
 from implementation.hospital import Hospital
 import numpy as np
 #from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
-from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+# from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerGoalProgrammingAltTest import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerHeuristicaRS import AllocationOptimizer
 # from implementation.optimizer.AllocationOptimizerNonGoal import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
+from scipy.stats import gamma
 # from optimizer.AllocationOptimizerCplexDocPlex import AllocationOptimizer
 from sklearn.metrics import mean_squared_error
 import timeit
@@ -26,6 +29,17 @@ class VMI(Model):
         self.day = 1
         self.train_runs = train_runs
         self.shelf_life = shelf_life
+        self.hosp_demand_factors = [0.5, 0.3, 0.2, 0.1]
+        self.day_stats = [
+            (2.6, 6.1),
+            (4.9, 9.2),
+            (6.9, 8.2),
+            (4.7, 9.3),
+            (5.7, 8.0),
+            (4.8, 8.7),
+            (1.7, 3.2)]
+        self.max_demands = self.set_demand_maximums(0.95)
+        # print(self.max_demands)
         self.exp_cost = exp_cost
         self.stockout_cost = stockout_cost
         self.hospitals = [Hospital([0] * shelf_life, 1.5 * exp_cost, stockout_cost) for _ in range(hospitals)]
@@ -37,6 +51,16 @@ class VMI(Model):
         self.state_space_memory = []
         for state in initial_state:
             self.state_space_memory.append({state})
+
+    def set_demand_maximums(self, service_level):
+        max_demands = []
+        for day in range(7):
+            aux = []
+            for hosp in range(4):
+                aux.append(gamma.ppf(service_level, self.day_stats[day][0],
+                                     scale=self.day_stats[day][1] * self.hosp_demand_factors[hosp]))
+            max_demands.append(aux)
+        return max_demands
 
     def model_logic(self, state, action):
         # demands = [5, 10, 15, 20]
@@ -53,7 +77,9 @@ class VMI(Model):
         # self.get_demand(state[5])
         # donors = self.get_donors()
         # A = min(action,sum(state[:self.shelf_life]))
-        A = action // 11
+        # A = action // 11
+        per_send=(action//11)/100.0
+        A=int(sum(state[:self.shelf_life])*per_send)
         prep_donors = int((((action % 11) * 10) / 100.0) * donors)
 
         # print(action, A, prep_donors ,sum(demands))
@@ -69,8 +95,9 @@ class VMI(Model):
         for i in self.hospitals:
             II.append(i.inventory.inventory)
 
-        demand_forecast = self.get_average_demand(state[5])
-        #demand_forecast = demands
+        #demand_forecast = self.get_average_demand(state[5])
+        demand_forecast = self.max_demands[state[5] - 1]
+        # demand_forecast = demands
 
         opt = AllocationOptimizer(II, A_i, demand_forecast, self.exp_cost, self.stockout_cost, self.shelf_life,
                                   len(self.hospitals))
@@ -130,13 +157,14 @@ class VMI(Model):
         return state, action, next_state, reward, False
 
     def valid_actions(self, state):
-        t_inv = sum(state[:self.shelf_life])
-        # a_max = min(t_inv, self.action_dim)
-        # v_act = [*range(a_max)]
-
-        v_act2 = {x for x in range(1100) if (x // 11) <= t_inv}
-        # print(t_inv,v_act2)
-        return v_act2
+        # t_inv = sum(state[:self.shelf_life])
+        # # a_max = min(t_inv, self.action_dim)
+        # # v_act = [*range(a_max)]
+        #
+        # v_act2 = {x for x in range(1100) if (x // 11) <= t_inv}
+        # # print(t_inv,v_act2)
+        # return v_act2
+        return {x for x in range(1100)}
 
     def reset_model(self):
         # print("Solutions buffer:",len(self.solve_memory))
