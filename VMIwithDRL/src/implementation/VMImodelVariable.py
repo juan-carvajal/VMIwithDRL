@@ -76,10 +76,10 @@ class VMI(Model):
         demands = self.get_demand(state[5])
         # self.get_demand(state[5])
         # donors = self.get_donors()
-        # A = min(action,sum(state[:self.shelf_life]))
-        # A = action // 11
-        per_send=(action//11)/100.0
-        A=int(sum(state[:self.shelf_life])*per_send)
+        A = min(action,sum(state[:self.shelf_life]))
+        A = action // 11
+        # per_send=(action//11)/100.0
+        # A=int(sum(state[:self.shelf_life])*per_send)
         prep_donors = int((((action % 11) * 10) / 100.0) * donors)
 
         # print(action, A, prep_donors ,sum(demands))
@@ -157,14 +157,14 @@ class VMI(Model):
         return state, action, next_state, reward, False
 
     def valid_actions(self, state):
-        # t_inv = sum(state[:self.shelf_life])
-        # # a_max = min(t_inv, self.action_dim)
-        # # v_act = [*range(a_max)]
-        #
-        # v_act2 = {x for x in range(1100) if (x // 11) <= t_inv}
-        # # print(t_inv,v_act2)
-        # return v_act2
-        return {x for x in range(1100)}
+        t_inv = sum(state[:self.shelf_life])
+        # a_max = min(t_inv, self.action_dim)
+        # v_act = [*range(a_max)]
+
+        v_act2 = {x for x in range(1100) if (x // 11) <= t_inv}
+        # print(t_inv,v_act2)
+        return v_act2
+        # return {x for x in range(1100)}
 
     def reset_model(self):
         # print("Solutions buffer:",len(self.solve_memory))
