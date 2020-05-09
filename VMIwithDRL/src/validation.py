@@ -43,7 +43,7 @@ class ValidationModel:
                 log_data += last_day_orders
                 stk_ = 0
                 to_send = self.shipping_heuristic(self.inventory.inventory, last_day_orders)
-                # stk_+=max(sum(last_day_orders)-sum(to_send),0)
+                #stk_+=max(sum(last_day_orders)-sum(to_send),0)
                 demands = self.get_demand(self.week_day)
 
                 log_data += to_send
@@ -97,7 +97,7 @@ class ValidationModel:
 
     def inventory_rule(self, inventory, S):
         total_inv = sum(inventory)
-        if total_inv >= S * 10:
+        if total_inv >= S:
             return 0
         else:
             #return self.round_to_multiple(S * 10 - total_inv,10,ceil=True)
@@ -202,37 +202,37 @@ def createIndividual():
 
 
 if __name__ == '__main__':
-    test = ValidationModel([52, 84, 51, 31, 16], years_to_run=1)
-    a = test.run()
-    print(a[:-1])
-    df = a[-1]
-    print(df)
-    df.to_csv('validation_data_heuristic.csv')
-    # from deap import base
-    # from deap import creator
-    # from deap import tools
-    # from deap import algorithms
-    #
-    # creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-    # creator.create("Individual", list, fitness=creator.FitnessMax)
-    # toolbox = base.Toolbox()
-    # toolbox.register("indices", createIndividual)
-    # toolbox.register("individual", tools.initIterate, creator.Individual,
-    #                  toolbox.indices)
-    # toolbox.register("mate", tools.cxTwoPoint)
-    # toolbox.register("mutate", tools.mutUniformInt,low=0,up=100,indpb=0.25)
-    # toolbox.register("select", tools.selTournament, tournsize=5)
-    # toolbox.register("evaluate", eval)
-    # toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-    # pop = toolbox.population(n=10)
-    #
-    # hof = tools.HallOfFame(1)
-    # stats = tools.Statistics(lambda ind: ind.fitness.values)
-    # stats.register("avg", np.mean)
-    # stats.register("std", np.std)
-    # stats.register("min", np.min)
-    # stats.register("max", np.max)
-    #
-    # algorithms.eaSimple(pop, toolbox, 0.25, 0.25, 100, stats=stats,
-    #                     halloffame=hof, verbose=True)
-    # print(hof)
+    # test = ValidationModel([52, 84, 51, 31, 16], years_to_run=1)
+    # a = test.run()
+    # print(a[:-1])
+    # df = a[-1]
+    # print(df)
+    # df.to_csv('validation_data_heuristic.csv')
+    from deap import base
+    from deap import creator
+    from deap import tools
+    from deap import algorithms
+
+    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    creator.create("Individual", list, fitness=creator.FitnessMax)
+    toolbox = base.Toolbox()
+    toolbox.register("indices", createIndividual)
+    toolbox.register("individual", tools.initIterate, creator.Individual,
+                     toolbox.indices)
+    toolbox.register("mate", tools.cxTwoPoint)
+    toolbox.register("mutate", tools.mutUniformInt,low=0,up=100,indpb=0.25)
+    toolbox.register("select", tools.selTournament, tournsize=5)
+    toolbox.register("evaluate", eval)
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+    pop = toolbox.population(n=50)
+
+    hof = tools.HallOfFame(1)
+    stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("avg", np.mean)
+    stats.register("std", np.std)
+    stats.register("min", np.min)
+    stats.register("max", np.max)
+
+    algorithms.eaSimple(pop, toolbox, 0.25, 0.25, 200, stats=stats,
+                        halloffame=hof, verbose=True)
+    print(hof)
