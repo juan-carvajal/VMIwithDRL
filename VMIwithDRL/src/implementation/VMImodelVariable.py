@@ -2,8 +2,8 @@ from implementation.hospital import Hospital
 import numpy as np
 #from implementation.optimizer.AllocationOptimizerHeuristica import AllocationOptimizer
 # from implementation.optimizer.AllocationOptimizerGoalProgramming3 import AllocationOptimizer
-#from implementation.optimizer.AllocationOptimizerGoalProgrammingAltTest import AllocationOptimizer
-from implementation.optimizer.AllocationOptimizerHeuristicaRS import AllocationOptimizer
+from implementation.optimizer.AllocationOptimizerGoalProgrammingAltTest import AllocationOptimizer
+#from implementation.optimizer.AllocationOptimizerHeuristicaRS import AllocationOptimizer
 # from implementation.optimizer.AllocationOptimizerNonGoal import AllocationOptimizer
 from collections import deque
 from agent_model.model import Model
@@ -76,7 +76,7 @@ class VMI(Model):
         demands = self.get_demand(state[5])
         # self.get_demand(state[5])
         # donors = self.get_donors()
-        A = min(action,sum(state[:self.shelf_life]))
+        #A = min(action,sum(state[:self.shelf_life]))
         A = action // 11
         # per_send=(action//11)/100.0
         # A=int(sum(state[:self.shelf_life])*per_send)
