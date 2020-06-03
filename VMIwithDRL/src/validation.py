@@ -42,8 +42,8 @@ class ValidationModel:
                     log_data += i.inventory
                 log_data += last_day_orders
                 stk_ = 0
-                to_send = self.shipping_heuristic(self.inventory.inventory, last_day_orders)
-                #stk_+=max(sum(last_day_orders)-sum(to_send),0)
+                to_send = self.shipping_heuristic2(self.inventory.inventory, last_day_orders, self.parameters[-1])
+                stk_ += max(sum(last_day_orders) - sum(to_send), 0)
                 demands = self.get_demand(self.week_day)
 
                 log_data += to_send
@@ -100,16 +100,20 @@ class ValidationModel:
         if total_inv >= S:
             return 0
         else:
-            #return self.round_to_multiple(S * 10 - total_inv,10,ceil=True)
-            #return 10 * math.ceil((S * 10 - total_inv) / 10)
-            return S-total_inv
+            # return self.round_to_multiple(S * 10 - total_inv,10,ceil=True)
+            # return 10 * math.ceil((S * 10 - total_inv) / 10)
+            return S - total_inv
 
-    def shipping_heuristic(self, inventory, orders):
+    def shipping_heuristic(self, inventory, orders, params):
         total_inv = sum(inventory)
         if total_inv == 0:
             return [0] * len(orders)
         total_orders = sum(orders)
-        val = (total_inv * 0.56) / 50
+        # val = (total_inv * 0.56) / 50
+        aux = params[1]
+        if aux == 0:
+            aux = 50
+        val = (total_inv * params[0] / 100) / aux
         if (val >= 1):
             heuristic = 1
         else:
@@ -120,9 +124,32 @@ class ValidationModel:
             service_level = heuristic
         else:
             service_level = total_inv / total_orders
-        #ship_orders = [self.round_to_multiple(int(service_level * order),10) for order in orders]
+        # ship_orders = [self.round_to_multiple(int(service_level * order),10) for order in orders]
         ship_orders = [int(service_level * order) for order in orders]
-        #print(service_level,orders,ship_orders)
+        # print(service_level,orders,ship_orders)
+        return ship_orders
+
+    def shipping_heuristic2(self, inventory, orders, params):
+        total_inv = sum(inventory)
+        total_orders = sum(orders)
+        if total_inv == 0 or total_orders == 0:
+            return [0] * len(orders)
+
+
+        val = (total_inv * (params / 100))
+        if (val >= 1):
+            heuristic = 1
+        else:
+            heuristic = val
+        aux = heuristic * total_orders
+
+        if (aux <= total_inv):
+            service_level = heuristic
+        else:
+            service_level = total_inv / total_orders
+        # ship_orders = [self.round_to_multiple(int(service_level * order),10) for order in orders]
+        ship_orders = [int(service_level * order) for order in orders]
+        # print(service_level,orders,ship_orders)
         return ship_orders
 
     def round_to_multiple(self, n, multiple, ceil=False):
@@ -198,41 +225,40 @@ def eval(individual):
 
 
 def createIndividual():
-    return [random.randint(0, 100) for _ in range(5)]
+    return [random.randint(0, 100) for _ in range(6)]
 
 
 if __name__ == '__main__':
-    # test = ValidationModel([52, 84, 51, 31, 16], years_to_run=1)
-    # a = test.run()
-    # print(a[:-1])
-    # df = a[-1]
-    # print(df)
-    # df.to_csv('validation_data_heuristic.csv')
-    from deap import base
-    from deap import creator
-    from deap import tools
-    from deap import algorithms
-
-    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-    creator.create("Individual", list, fitness=creator.FitnessMax)
-    toolbox = base.Toolbox()
-    toolbox.register("indices", createIndividual)
-    toolbox.register("individual", tools.initIterate, creator.Individual,
-                     toolbox.indices)
-    toolbox.register("mate", tools.cxTwoPoint)
-    toolbox.register("mutate", tools.mutUniformInt,low=0,up=100,indpb=0.25)
-    toolbox.register("select", tools.selTournament, tournsize=5)
-    toolbox.register("evaluate", eval)
-    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-    pop = toolbox.population(n=50)
-
-    hof = tools.HallOfFame(1)
-    stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("avg", np.mean)
-    stats.register("std", np.std)
-    stats.register("min", np.min)
-    stats.register("max", np.max)
-
-    algorithms.eaSimple(pop, toolbox, 0.25, 0.25, 200, stats=stats,
-                        halloffame=hof, verbose=True)
-    print(hof)
+    test = ValidationModel([90, 51, 29, 20, 11, 79], years_to_run=500)
+    a = test.run()
+    print(a[:-1])
+    df = a[-1]
+    print(df)
+    df.to_csv('validation_data_heuristic.csv')
+    # from deap import base
+    # from deap import creator
+    # from deap import tools
+    # from deap import algorithms
+    #
+    # creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    # creator.create("Individual", list, fitness=creator.FitnessMax)
+    # toolbox = base.Toolbox()
+    # toolbox.register("indices", createIndividual)
+    # toolbox.register("individual", tools.initIterate, creator.Individual,
+    #                  toolbox.indices)
+    # toolbox.register("mate", tools.cxTwoPoint)
+    # toolbox.register("mutate", tools.mutUniformInt, low=0, up=100, indpb=0.25)
+    # toolbox.register("select", tools.selTournament, tournsize=30)
+    # toolbox.register("evaluate", eval)
+    # toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+    # pop = toolbox.population(n=150)
+    #
+    # hof = tools.HallOfFame(1)
+    # stats = tools.Statistics(lambda ind: ind.fitness.values)
+    # stats.register("avg", np.mean)
+    # stats.register("std", np.std)
+    # stats.register("min", np.min)
+    # stats.register("max", np.max)
+    # algorithms.eaSimple(pop, toolbox, 0.25, 0.25, 200, stats=stats,
+    #                     halloffame=hof, verbose=True)
+    # print(hof)
